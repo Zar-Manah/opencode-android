@@ -1,0 +1,92 @@
+#!/bin/sh
+# OpenCode curl wrapper
+# 1. Native Debian curl (/usr/bin/curl)
+# 2. Android system curl (/system/bin/curl)
+# 3. Termux host ELF binary (/open-prefix/bin/curl or /data/data/a.opencode/files/usr/bin/curl)
+# 4. Universal Python 3 fallback
+
+SELF="$(readlink -f "$0" 2>/dev/null || echo "$0")"
+
+# 1. Native Debian curl (ensure not self-referential)
+if [ -x /usr/bin/curl ] && [ "$(readlink -f /usr/bin/curl 2>/dev/null)" != "$SELF" ]; then
+    exec /usr/bin/curl "$@"
+fi
+
+# 2. Android OS /system/bin/curl
+if [ -x /system/bin/curl ] && [ "$(readlink -f /system/bin/curl 2>/dev/null)" != "$SELF" ]; then
+    exec /system/bin/curl "$@"
+fi
+
+# 3. Termux real ELF binary (only if not a wrapper script to prevent loops)
+for bin in /open-prefix/bin/curl /data/data/a.opencode/files/usr/bin/curl; do
+    if [ -x "$bin" ] && [ "$(readlink -f "$bin" 2>/dev/null)" != "$SELF" ]; then
+        if head -c 2 "$bin" 2>/dev/null | grep -qv '#!'; then
+            exec "$bin" "$@"
+        fi
+    fi
+done
+
+# 4. Universal Python 3 fallback
+if command -v python3 >/dev/null 2>&1; then
+    exec python3 -c '
+import sys, urllib.request, urllib.parse, ssl
+
+args = sys.argv[1:]
+url = None
+out_file = None
+silent = False
+data = None
+headers = {"User-Agent": "opencode-curl/1.0"}
+timeout = 10.0
+
+i = 0
+while i < len(args):
+    arg = args[i]
+    if arg in ("-s", "--silent"):
+        silent = True
+    elif arg in ("-o", "--output") and i + 1 < len(args):
+        out_file = args[i+1]; i += 1
+    elif arg in ("-m", "--max-time") and i + 1 < len(args):
+        try: timeout = float(args[i+1])
+        except: pass
+        i += 1
+    elif arg in ("-d", "--data", "--data-raw") and i + 1 < len(args):
+        data = args[i+1].encode("utf-8"); i += 1
+    elif arg in ("-H", "--header") and i + 1 < len(args):
+        hp = args[i+1].split(":", 1)
+        if len(hp) == 2: headers[hp[0].strip()] = hp[1].strip()
+        i += 1
+    elif not arg.startswith("-"):
+        url = arg
+    i += 1
+
+if not url:
+    sys.exit(1)
+
+if not (url.startswith("http://") or url.startswith("https://")):
+    url = "http://" + url
+
+ctx = ssl.create_default_context()
+ctx.check_hostname = False
+ctx.verify_mode = ssl.CERT_NONE
+
+req = urllib.request.Request(url, data=data, headers=headers)
+try:
+    with urllib.request.urlopen(req, timeout=timeout, context=ctx) as resp:
+        content = resp.read()
+        if out_file:
+            with open(out_file, "wb") as f:
+                f.write(content)
+        else:
+            sys.stdout.buffer.write(content)
+            sys.stdout.flush()
+    sys.exit(0)
+except Exception as e:
+    if not silent:
+        sys.stderr.write(f"curl: {e}\n")
+    sys.exit(1)
+' "$@"
+fi
+
+echo "curl: command not found" >&2
+exit 127

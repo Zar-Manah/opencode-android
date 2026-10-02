@@ -1,0 +1,227 @@
+plugins {
+    id "com.android.application"
+}
+
+android {
+    namespace "com.termux"
+    compileSdkVersion project.properties.compileSdkVersion.toInteger()
+    buildToolsVersion "33.0.2"
+    buildFeatures { buildConfig true }
+    ndkVersion = System.getenv("JITPACK_NDK_VERSION") ?: project.properties.ndkVersion
+    def appVersionName = System.getenv("TERMUX_APP_VERSION_NAME") ?: ""
+    def apkVersionTag = System.getenv("TERMUX_APK_VERSION_TAG") ?: ""
+    def splitAPKsForDebugBuilds = System.getenv("TERMUX_SPLIT_APKS_FOR_DEBUG_BUILDS") ?: "1"
+    def splitAPKsForReleaseBuilds = System.getenv("TERMUX_SPLIT_APKS_FOR_RELEASE_BUILDS") ?: "1" // Enable arm64 release APK
+
+    dependencies {
+        implementation "androidx.annotation:annotation:1.3.0"
+        implementation "androidx.core:core:1.6.0"
+        implementation "androidx.drawerlayout:drawerlayout:1.1.1"
+        implementation "androidx.preference:preference:1.1.1"
+        implementation "androidx.viewpager:viewpager:1.0.0"
+        implementation "com.google.guava:guava:24.1-jre"
+        implementation "io.noties.markwon:core:$markwonVersion"
+        implementation "io.noties.markwon:ext-strikethrough:$markwonVersion"
+        implementation "io.noties.markwon:linkify:$markwonVersion"
+        implementation "io.noties.markwon:recycler:$markwonVersion"
+
+        implementation project(":terminal-view")
+        implementation project(":termux-shared")
+    }
+
+    defaultConfig {
+        applicationId "a.opencode"
+        minSdkVersion project.properties.minSdkVersion.toInteger()
+        targetSdkVersion project.properties.targetSdkVersion.toInteger()
+        versionCode 116
+        versionName "1.1.6"
+
+        if (appVersionName) versionName = appVersionName
+        validateVersionName(versionName)
+
+        manifestPlaceholders.TERMUX_PACKAGE_NAME = "a.opencode"
+        manifestPlaceholders.TERMUX_APP_NAME = "OpenCode"
+        manifestPlaceholders.TERMUX_API_APP_NAME = "OpenCode:API"
+        manifestPlaceholders.TERMUX_BOOT_APP_NAME = "OpenCode:Boot"
+        manifestPlaceholders.TERMUX_FLOAT_APP_NAME = "OpenCode:Float"
+        manifestPlaceholders.TERMUX_STYLING_APP_NAME = "OpenCode:Styling"
+        manifestPlaceholders.TERMUX_TASKER_APP_NAME = "OpenCode:Tasker"
+        manifestPlaceholders.TERMUX_WIDGET_APP_NAME = "OpenCode:Widget"
+
+
+        externalNativeBuild {
+            ndkBuild {
+                cFlags "-std=c11", "-Wall", "-Wextra", "-Werror", "-Os", "-fno-stack-protector", "-Wl,--gc-sections"
+                abiFilters 'arm64-v8a'
+            }
+        }
+
+        aaptOptions {
+            ignoreAssetsPattern "!.svn:!.git:!.ds_store:!*.scc:!CVS:!thumbs.db:!picasa.ini:!*~"
+            noCompress "mp4", "wav"
+        }
+
+        splits {
+            abi {
+                enable ((gradle.startParameter.taskNames.any { it.contains("Debug") } && splitAPKsForDebugBuilds == "1") ||
+                    (gradle.startParameter.taskNames.any { it.contains("Release") } && splitAPKsForReleaseBuilds == "1"))
+                reset ()
+                include 'arm64-v8a'
+                universalApk false
+            }
+        }
+    }
+
+    signingConfigs {
+        debug {
+            storeFile file('dev_keystore.jks')
+            keyAlias 'alias'
+            storePassword 'xrj45yWGLbsO7W0v'
+            keyPassword 'xrj45yWGLbsO7W0v'
+        }
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            shrinkResources false
+            signingConfig signingConfigs.debug
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+
+        debug {
+            signingConfig signingConfigs.debug
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+
+    externalNativeBuild {
+        ndkBuild {
+            path "src/main/cpp/Android.mk"
+        }
+    }
+
+    lintOptions {
+        disable 'ProtectedPermissions'
+    }
+
+    aaptOptions {
+        noCompress 'gz', 'tgz', 'tar.gz', 'part00', 'part01', 'part02', 'part03', 'part04', 'part05', 'part06', 'part07', 'part08', 'part09', 'mp4', 'wav'
+    }
+
+    testOptions {
+        unitTests {
+            includeAndroidResources = true
+        }
+    }
+
+    packagingOptions {
+        jniLibs {
+            useLegacyPackaging true
+            keepDebugSymbols.add("**/*.so")
+        }
+    }
+
+    applicationVariants.all { variant ->
+        variant.outputs.all { output ->
+            if (variant.buildType.name == "debug") {
+                def abi = output.getFilter(com.android.build.OutputFile.ABI)
+                outputFileName = new File("termux-app_" + (apkVersionTag ? apkVersionTag : "debug") + "_" + (abi ? abi : "universal") + ".apk")
+            } else if (variant.buildType.name == "release") {
+                def abi = output.getFilter(com.android.build.OutputFile.ABI)
+                outputFileName = new File("termux-app_" + (apkVersionTag ? apkVersionTag : "release") + "_" + (abi ? abi : "universal") + ".apk")
+            }
+        }
+    }
+
+}
+
+dependencies {
+    testImplementation "junit:junit:4.13.2"
+    testImplementation "org.robolectric:robolectric:4.4"
+}
+
+task versionName {
+    doLast {
+        print android.defaultConfig.versionName
+    }
+}
+
+def validateVersionName(String versionName) {
+    // https://semver.org/spec/v2.0.0.html#is-there-a-suggested-regular-expression-regex-to-check-a-semver-string
+    // ^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-((?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?$
+    if (!java.util.regex.Pattern.matches("^(0|[1-9]\\d*)\\.(0|[1-9]\\d*)\\.(0|[1-9]\\d*)(?:-((?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\\.(?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\\+([0-9a-zA-Z-]+(?:\\.[0-9a-zA-Z-]+)*))?\$", versionName))
+        throw new GradleException("The versionName '"  + versionName + "' is not a valid version as per semantic version '2.0.0' spec in the format 'major.minor.patch(-prerelease)(+buildmetadata)'. https://semver.org/spec/v2.0.0.html.")
+}
+
+def downloadBootstrap(String arch, String expectedChecksum, String version) {
+    def digest = java.security.MessageDigest.getInstance("SHA-256")
+
+    def localUrl = "src/main/cpp/bootstrap-" + arch + ".zip"
+    def file = new File(projectDir, localUrl)
+    if (file.exists()) {
+        def buffer = new byte[8192]
+        def input = new FileInputStream(file)
+        while (true) {
+            def readBytes = input.read(buffer)
+            if (readBytes < 0) break
+            digest.update(buffer, 0, readBytes)
+        }
+        def checksum = new BigInteger(1, digest.digest()).toString(16)
+        while (checksum.length() < 64) { checksum = "0" + checksum }
+        if (checksum == expectedChecksum) {
+            return
+        } else {
+            logger.quiet("Deleting old local file with wrong hash: " + localUrl)
+            file.delete()
+        }
+    }
+
+    def remoteUrl = "https://github.com/termux/termux-packages/releases/download/bootstrap-" + version + "/bootstrap-" + arch + ".zip"
+    logger.quiet("Downloading " + remoteUrl + " ...")
+
+    file.parentFile.mkdirs()
+    def out = new BufferedOutputStream(new FileOutputStream(file))
+
+    def connection = new URL(remoteUrl).openConnection()
+    connection.setInstanceFollowRedirects(true)
+    def digestStream = new java.security.DigestInputStream(connection.inputStream, digest)
+    out << digestStream
+    out.close()
+
+    def checksum = new BigInteger(1, digest.digest()).toString(16)
+    while (checksum.length() < 64) { checksum = "0" + checksum }
+    if (checksum != expectedChecksum) {
+        file.delete()
+        throw new GradleException("Wrong checksum for " + remoteUrl + ": expected: " + expectedChecksum + ", actual: " + checksum)
+    }
+}
+
+clean {
+    doLast {
+        def tree = fileTree(new File(projectDir, 'src/main/cpp'))
+        tree.include 'bootstrap-*.zip'
+        tree.each { it.delete() }
+    }
+}
+
+task downloadBootstraps() {
+    doLast {
+        // OpenCode: zips patched with prefix a.opencode
+        def version = "2025.03.28-r1+apt-android-7"
+        downloadBootstrap("aarch64", "64b6c01d56d83f517fd3096b23107cc848e9e7b3fa0e7b3ed29fad3992d4d57a", version)
+        downloadBootstrap("arm",     "157d9249cb0f4d2e9d12d5034fcb327e24074c49016f0d88496ca94dd31c9c55", version)
+        downloadBootstrap("i686",    "224e7c9a83836bb565b14c28024881bf424cfdd2bc3b72cc6a27903e4219d727", version)
+        downloadBootstrap("x86_64",  "40b35c8c094872fba28f0b433b8c38952b5f9054ff4c6b2974681b461887f767", version)
+    }
+}
+
+afterEvaluate {
+    android.applicationVariants.all { variant ->
+        variant.javaCompileProvider.get().dependsOn(downloadBootstraps)
+    }
+}

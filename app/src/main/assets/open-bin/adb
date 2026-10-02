@@ -1,0 +1,185 @@
+#!/bin/bash
+# adb: universal wrapper with fallback to pc (OpenCode Native A11y Bridge 127.0.0.1:4399)
+# Allows any tool (OpenCode, skills, python, bash) to function transparently
+# even if Android TCP port 5555 is down after reboots.
+
+BRIDGE_URL="http://127.0.0.1:4399"
+REAL_ADB="/open-prefix/bin/adb"
+
+is_adb_tcp_alive() {
+    [ -x "$REAL_ADB" ] && timeout 1 "$REAL_ADB" -s 127.0.0.1:5555 get-state 2>/dev/null | grep -q "device"
+}
+
+is_bridge_alive() {
+    curl -s --noproxy "*" --connect-timeout 2 --max-time 4 "$BRIDGE_URL/status" 2>/dev/null | grep -q '"ok":true'
+}
+
+# 1. Devices check
+if [ "$1" = "devices" ]; then
+    if is_adb_tcp_alive; then
+        exec "$REAL_ADB" "$@"
+    elif is_bridge_alive; then
+        echo "List of devices attached"
+        echo -e "127.0.0.1:5555\tdevice"
+        exit 0
+    fi
+fi
+
+# 2. get-state
+if [ "$1" = "get-state" ]; then
+    if is_adb_tcp_alive; then
+        exec "$REAL_ADB" "$@"
+    elif is_bridge_alive; then
+        echo "device"
+        exit 0
+    fi
+fi
+
+# 3. wait-for-device
+if [ "$1" = "wait-for-device" ]; then
+    if is_adb_tcp_alive; then
+        exec "$REAL_ADB" "$@"
+    elif is_bridge_alive; then
+        exit 0
+    fi
+fi
+
+# 4. connect
+if [ "$1" = "connect" ]; then
+    if is_adb_tcp_alive; then
+        exec "$REAL_ADB" "$@"
+    elif is_bridge_alive; then
+        echo "connected to ${2:-127.0.0.1:5555}"
+        exit 0
+    fi
+fi
+
+# 5. APK installation
+if [ "$1" = "install" ]; then
+    if is_adb_tcp_alive; then
+        if "$REAL_ADB" "$@"; then
+            exit 0
+        fi
+    fi
+    shift
+    while [[ "$1" == -* ]]; do
+        shift
+    done
+    exec pc install "$1"
+fi
+
+# 6. Package uninstallation
+if [ "$1" = "uninstall" ]; then
+    if is_adb_tcp_alive; then
+        if "$REAL_ADB" "$@"; then
+            exit 0
+        fi
+    fi
+    shift
+    while [[ "$1" == -* ]]; do
+        shift
+    done
+    exec pc uninstall "$1"
+fi
+
+# 7. Screen capture via screencap
+if [ "$1" = "exec-out" ] && [ "$2" = "screencap" ]; then
+    if is_adb_tcp_alive; then
+        exec "$REAL_ADB" "$@"
+    fi
+    curl -s --noproxy "*" --connect-timeout 2 --max-time 8 "$BRIDGE_URL/shot"
+    exit 0
+fi
+
+if [ "$1" = "shell" ] && [ "$2" = "screencap" ]; then
+    if is_adb_tcp_alive; then
+        exec "$REAL_ADB" "$@"
+    fi
+    out="${4:-/bridge/shot.png}"
+    exec pc shot "$out"
+fi
+
+# 8. UI hierarchy dump
+if [ "$1" = "shell" ] && [ "$2" = "uiautomator" ] && [ "$3" = "dump" ]; then
+    if is_adb_tcp_alive; then
+        exec "$REAL_ADB" "$@"
+    fi
+    exec pc dump /bridge/dump.json
+fi
+
+# 9. Input commands (tap, swipe, text, keyevent)
+if [ "$1" = "shell" ] && [ "$2" = "input" ]; then
+    if is_adb_tcp_alive; then
+        exec "$REAL_ADB" "$@"
+    fi
+    case "$3" in
+        tap)
+            exec pc tap "$4" "$5"
+            ;;
+        swipe)
+            exec pc swipe "$4" "$5" "$6" "$7" "${8:-300}"
+            ;;
+        text)
+            shift 3
+            exec pc text "$*"
+            ;;
+        keyevent)
+            case "$4" in
+                3|KEYCODE_HOME) exec pc key HOME ;;
+                4|KEYCODE_BACK) exec pc key BACK ;;
+                187|KEYCODE_APP_SWITCH) exec pc key RECENTS ;;
+                26|KEYCODE_POWER) exec pc key POWER ;;
+                24|KEYCODE_VOLUME_UP) exec pc key VOLUP ;;
+                25|KEYCODE_VOLUME_DOWN) exec pc key VOLDOWN ;;
+                *) exec pc key "$4" ;;
+            esac
+            ;;
+    esac
+fi
+
+# 10. Launching applications (am start / monkey)
+if [ "$1" = "shell" ] && [ "$2" = "am" ] && [ "$3" = "start" ]; then
+    if is_adb_tcp_alive; then
+        exec "$REAL_ADB" "$@"
+    fi
+    for arg in "$@"; do
+        if [[ "$arg" =~ ^[a-zA-Z0-9._-]+/[a-zA-Z0-9._-]+$ ]]; then
+            pkg="${arg%%/*}"
+            exec pc open "$pkg"
+        fi
+    done
+fi
+
+if [ "$1" = "shell" ] && [ "$2" = "monkey" ]; then
+    if is_adb_tcp_alive; then
+        exec "$REAL_ADB" "$@"
+    fi
+    pkg="$4"
+    if [ -n "$pkg" ]; then
+        exec pc open "$pkg"
+    fi
+fi
+
+# 11. Package listing (pm list packages)
+if [ "$1" = "shell" ] && [ "$2" = "pm" ] && [ "$3" = "list" ]; then
+    if is_adb_tcp_alive; then
+        exec "$REAL_ADB" "$@"
+    fi
+    exec pc list "$5"
+fi
+
+# 12. If real ADB is alive, forward command
+if [ -x "$REAL_ADB" ]; then
+    export TMPDIR="${TMPDIR:-/data/data/a.opencode/files/usr/tmp}"
+    export ANDROID_SERIAL="${ANDROID_SERIAL:-127.0.0.1:5555}"
+    exec "$REAL_ADB" "$@"
+fi
+
+# 13. Emergency fallback
+if [ "$1" = "shell" ]; then
+    shift
+    exec "$@"
+fi
+
+echo "adb: command completed [OpenCode Native Bridge]"
+exit 0

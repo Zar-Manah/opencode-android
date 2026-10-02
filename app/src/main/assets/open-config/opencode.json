@@ -1,0 +1,37 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "plugin": [],
+  "permission": {
+    "read": "allow",
+    "edit": "allow",
+    "glob": "allow",
+    "grep": "allow",
+    "webfetch": "allow",
+    "websearch": "allow",
+    "task": "allow",
+    "skill": "allow",
+    "lsp": "allow",
+    "external_directory": "allow",
+    "bash": {
+      "*": "allow",
+      "rm -rf *": "deny",
+      "rm -fr *": "deny",
+      "rm -Rf *": "deny",
+      "sudo rm *": "deny",
+      "sudo rm -rf *": "deny",
+      "dd *": "deny",
+      "mkfs *": "deny",
+      "shutdown *": "deny",
+      "reboot *": "deny",
+      "poweroff *": "deny",
+      "halt *": "deny",
+      "chmod -R 777 *": "deny",
+      "chmod 777 *": "deny",
+      "curl * | sh": "deny",
+      "curl * | bash": "deny",
+      "wget * | sh": "deny",
+      "git push --force *": "deny",
+      "git reset --hard *": "deny"
+    }
+  }
+}

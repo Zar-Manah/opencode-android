@@ -1,0 +1,66 @@
+#!/data/data/a.opencode/files/usr/bin/bash
+# open-debian: proot entry wrapper for OpenCode environment.
+export HOME=/data/data/a.opencode/files/home
+export PREFIX=/data/data/a.opencode/files/usr
+export TERMUX__PREFIX=$PREFIX
+export TERMUX_APP_PACKAGE=a.opencode
+export TERMUX_APP__PACKAGE_NAME=a.opencode
+export TERMUX_VERSION=${TERMUX_VERSION:-0.118}
+export TERMUX_APP__APP_VERSION_NAME=${TERMUX_APP__APP_VERSION_NAME:-0.118}
+export TMPDIR="$PREFIX/tmp"
+export PATH=$HOME/bin:$PREFIX/bin:$PATH
+export LD_LIBRARY_PATH=$PREFIX/lib:${LD_LIBRARY_PATH:-}
+
+mkdir -p "$HOME/.open-bridge"
+mkdir -p "$HOME/bin"
+mkdir -p "$PREFIX/tmp"
+
+# Local ADB connection (non-blocking)
+if [ -x "$PREFIX/bin/adb" ]; then
+    export ANDROID_SERIAL=127.0.0.1:5555
+    ("$PREFIX/bin/adb" connect 127.0.0.1:5555 >/dev/null 2>&1 &)
+fi
+
+# Ensure bind mount target directories exist in Debian
+for D_ROOT in "$PREFIX/var/lib/proot-distro/containers/debian/rootfs" "$PREFIX/var/lib/proot-distro/containers/debian" "$PREFIX/var/lib/proot-distro/installed-rootfs/debian"; do
+    if [ -d "$D_ROOT" ]; then
+        mkdir -p "$D_ROOT/open-home" "$D_ROOT/bridge" "$D_ROOT/open-prefix" "$D_ROOT/sdcard" "$D_ROOT/storage/emulated/0" 2>/dev/null || true
+    fi
+done
+
+# Fast sync control binaries and cron to Debian if not already synced
+D_BIN="$PREFIX/var/lib/proot-distro/containers/debian/rootfs/usr/local/bin"
+if [ -d "$D_BIN" ] && [ ! -f "$D_BIN/pc" ]; then
+    for b in pc adb crontab service cron-daemon cron-daemon.js free ping open-auth open-factory-setup factory-setup pbridge; do
+        [ -f "$HOME/.open-bridge/$b" ] && cp -f "$HOME/.open-bridge/$b" "$D_BIN/$b" 2>/dev/null && chmod 755 "$D_BIN/$b" 2>/dev/null || true
+        [ -f "$HOME/bin/$b" ] && cp -f "$HOME/bin/$b" "$D_BIN/$b" 2>/dev/null && chmod 755 "$D_BIN/$b" 2>/dev/null || true
+        [ -f "$PREFIX/bin/$b" ] && cp -f "$PREFIX/bin/$b" "$D_BIN/$b" 2>/dev/null && chmod 755 "$D_BIN/$b" 2>/dev/null || true
+    done
+    D_ROOT="$(dirname "$(dirname "$D_BIN")")"
+    mkdir -p "$D_ROOT/etc" "$D_ROOT/var/spool/cron/crontabs" 2>/dev/null || true
+    printf "nameserver 1.1.1.1\nnameserver 8.8.8.8\nnameserver 8.8.4.4\n" > "$D_ROOT/etc/resolv.conf" 2>/dev/null || true
+    if [ -f "$D_ROOT/root/.opencode/crontab.txt" ]; then
+        cp -f "$D_ROOT/root/.opencode/crontab.txt" "$D_ROOT/var/spool/cron/crontabs/root" 2>/dev/null || true
+        chmod 600 "$D_ROOT/var/spool/cron/crontabs/root" 2>/dev/null || true
+    fi
+    mkdir -p "$D_ROOT/etc/profile.d" 2>/dev/null || true
+    cat << 'CRON_PROF_EOF' > "$D_ROOT/etc/profile.d/open-cron.sh"
+if [ -x /usr/local/bin/service ] && [ ! -f /var/run/cron.pid ]; then
+    /usr/local/bin/service cron start >/dev/null 2>&1 || true
+fi
+CRON_PROF_EOF
+    chmod 755 "$D_ROOT/etc/profile.d/open-cron.sh" 2>/dev/null || true
+fi
+
+DIST=debian
+case "$1" in
+  debian|ubuntu) DIST="$1"; shift;;
+esac
+
+exec proot-distro login "$DIST" \
+  --bind "$HOME:/open-home" \
+  --bind "$HOME/.open-bridge:/bridge" \
+  --bind "$PREFIX:/open-prefix" \
+  --bind "/storage/emulated/0:/sdcard" \
+  --bind "/storage/emulated/0:/storage/emulated/0" \
+  "$@"

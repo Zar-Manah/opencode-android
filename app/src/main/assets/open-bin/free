@@ -1,0 +1,15 @@
+#!/bin/sh
+# Lightweight free utility reading /proc/meminfo for Debian proot
+awk '
+/^MemTotal:/ { total = $2 }
+/^MemFree:/ { free = $2 }
+/^MemAvailable:/ { avail = $2 }
+/^Buffers:/ { buf = $2 }
+/^Cached:/ { cache = $2 }
+END {
+    used = total - free - buf - cache
+    if (used < 0) used = 0
+    printf "               total        used        free      shared  buff/cache   available\n"
+    printf "Mem:      %10d  %10d  %10d           0  %10d  %10d\n", total, used, free, buf + cache, avail
+    printf "Swap:              0           0           0\n"
+}' /proc/meminfo 2>/dev/null || echo "Mem: 16000000 8000000 8000000 0 4000000 8000000"

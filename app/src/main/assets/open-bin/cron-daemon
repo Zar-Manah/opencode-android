@@ -1,0 +1,20 @@
+#!/bin/sh
+# Autonomous Cron Daemon runner for OpenCode Debian proot
+
+NODE=""
+for n in /opt/node/bin/node /usr/local/bin/node /usr/bin/node $(command -v node 2>/dev/null); do
+    if [ -x "$n" ]; then
+        NODE="$n"
+        break
+    fi
+done
+
+if [ -z "$NODE" ]; then
+    echo "cron-daemon error: node binary not found" >&2
+    exit 1
+fi
+
+export PATH="/root/.opencode/bin:/opt/node/bin:/usr/local/bin:/usr/bin:/bin:$PATH"
+export HOME="/root"
+
+exec "$NODE" /usr/local/bin/cron-daemon.js "$@"

@@ -1,0 +1,79 @@
+#!/bin/bash
+# open-factory-setup — installs on-device Android toolchain for
+# skill android-app-factory: JDK 21 + Gradle 8.7 + SDK + aapt2 ARM.
+# Usage in Debian: open-factory-setup
+# Requires internet connection only during initial setup.
+set -euo pipefail
+
+JAVA_HOME_DIR="/usr/lib/jvm/java-21-openjdk-arm64"
+GRADLE_VER="8.7"
+GRADLE_DIR="/opt/gradle-8.7"
+SDK_DIR="/opt/android-sdk"
+
+echo "[1/6] JDK + utilities (apt)..."
+if [ ! -x "$JAVA_HOME_DIR/bin/javac" ]; then
+    export DEBIAN_FRONTEND=noninteractive
+    apt-get update
+    apt-get install -y openjdk-21-jdk-headless unzip wget zip
+else
+    echo "JDK 21 already installed at $JAVA_HOME_DIR"
+fi
+
+echo "[2/6] Gradle $GRADLE_VER at $GRADLE_DIR..."
+if [ ! -x "$GRADLE_DIR/bin/gradle" ]; then
+    mkdir -p /opt
+    cd /tmp
+    wget -q "https://services.gradle.org/distributions/gradle-${GRADLE_VER}-bin.zip" -O gradle.zip
+    unzip -q -o gradle.zip -d /opt
+    mv -f "/opt/gradle-${GRADLE_VER}" "$GRADLE_DIR"
+    rm -f gradle.zip
+fi
+
+echo "[3/6] Android SDK at $SDK_DIR (cmdline-tools + platforms)..."
+export JAVA_HOME="$JAVA_HOME_DIR"
+export PATH="$JAVA_HOME/bin:$PATH"
+export ANDROID_HOME="$SDK_DIR" ANDROID_SDK_ROOT="$SDK_DIR"
+mkdir -p "$SDK_DIR/cmdline-tools"
+if [ ! -x "$SDK_DIR/cmdline-tools/latest/bin/sdkmanager" ]; then
+    cd /tmp
+    wget -q "https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip" -O cmdtools.zip
+    rm -rf "$SDK_DIR/cmdline-tools/latest"
+    unzip -q -o cmdtools.zip -d "$SDK_DIR/cmdline-tools"
+    mv -f "$SDK_DIR/cmdline-tools/cmdline-tools" "$SDK_DIR/cmdline-tools/latest"
+    rm -f cmdtools.zip
+fi
+if [ ! -d "$SDK_DIR/platforms/android-35" ] && [ -x "$SDK_DIR/cmdline-tools/latest/bin/sdkmanager" ]; then
+    yes | "$SDK_DIR/cmdline-tools/latest/bin/sdkmanager" --licenses >/dev/null 2>&1 || true
+    "$SDK_DIR/cmdline-tools/latest/bin/sdkmanager" "platform-tools" "platforms;android-34" "platforms;android-35" "build-tools;34.0.0" "build-tools;35.0.1" || true
+else
+    echo "Android SDK Platforms already present at $SDK_DIR"
+fi
+
+echo "[4/6] ARM binaries..."
+mkdir -p "$SDK_DIR/build-tools/35.0.1"
+for bin in aapt2 aidl zipalign split-select; do
+    src="/opt/factory/$bin-arm"
+    if [ -f "$src" ]; then
+        cp -f "$src" "$SDK_DIR/build-tools/35.0.1/$bin"
+        chmod 755 "$SDK_DIR/build-tools/35.0.1/$bin"
+    else
+        echo "WARNING: not found: $src" >&2
+    fi
+done
+
+echo "[5/6] override in ~/.gradle/gradle.properties..."
+mkdir -p "$HOME/.gradle"
+if [ ! -f "$HOME/.gradle/gradle.properties" ]; then
+    printf 'android.aapt2FromMavenOverride=%s\n' "$SDK_DIR/build-tools/35.0.1/aapt2" > "$HOME/.gradle/gradle.properties"
+elif ! grep -q "aapt2FromMavenOverride" "$HOME/.gradle/gradle.properties"; then
+    printf 'android.aapt2FromMavenOverride=%s\n' "$SDK_DIR/build-tools/35.0.1/aapt2" >> "$HOME/.gradle/gradle.properties"
+fi
+
+echo "[6/6] verification..."
+java -version 2>&1 | head -n 1
+"$GRADLE_DIR/bin/gradle" --version 2>/dev/null | grep -E "^Gradle " || true
+for bin in aapt2 aidl zipalign split-select; do
+    "$SDK_DIR/build-tools/35.0.1/$bin" version >/dev/null 2>&1 \
+        && echo "$bin OK" || echo "$bin PENDING (see step 4)"
+done
+echo "[OK] Toolchain ready. Create your app with the android-app-factory skill."
