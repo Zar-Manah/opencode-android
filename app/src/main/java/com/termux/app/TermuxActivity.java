@@ -17,6 +17,7 @@ import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import com.termux.BuildConfig;
+import android.content.res.Configuration;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
@@ -494,6 +495,10 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
         int btnPadV = (int) (10 * density);
         int marginV = (int) (5 * density);
 
+        boolean isNight = ((getResources().getConfiguration().uiMode & Configuration.UI_MODE_NIGHT_MASK) == Configuration.UI_MODE_NIGHT_YES)
+                || (mProperties != null && mProperties.isUsingBlackUI());
+        int textColor = isNight ? Color.WHITE : Color.parseColor("#212121");
+
         android.widget.ScrollView scrollView = new android.widget.ScrollView(this);
         android.widget.LinearLayout layout = new android.widget.LinearLayout(this);
         layout.setOrientation(android.widget.LinearLayout.VERTICAL);
@@ -501,7 +506,7 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
 
         android.widget.TextView msg = new android.widget.TextView(this);
         msg.setTextSize(14);
-        msg.setTextColor(Color.WHITE);
+        msg.setTextColor(textColor);
         msg.setLineSpacing(0, 1.25f);
         msg.setText("To grant OpenCode full device control (tap, keys, screen capture, and app installation), follow these steps:\n\n" +
                     "1️⃣ Tap '1. Go to Accessibility' and select OpenCode.\n" +
@@ -567,7 +572,7 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
         btn4.setText("Continue to OpenCode");
         btn4.setTextSize(14);
         btn4.setAllCaps(false);
-        btn4.setTextColor(Color.parseColor("#B0BEC5"));
+        btn4.setTextColor(isNight ? Color.parseColor("#B0BEC5") : Color.parseColor("#546E7A"));
         btn4.setPadding(padH, btnPadV, padH, btnPadV);
         android.widget.LinearLayout.LayoutParams lp4 = new android.widget.LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
         lp4.setMargins(0, marginV, 0, marginV);
