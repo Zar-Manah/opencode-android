@@ -3,12 +3,11 @@
 [![GitHub Release](https://img.shields.io/github/v/release/Zar-Manah/opencode-android?color=7C3AED&style=for-the-badge&logo=android)](https://github.com/Zar-Manah/opencode-android/releases/latest)
 [![Platform](https://img.shields.io/badge/Platform-Android%208.0%2B-3DDC84?style=for-the-badge&logo=android)](https://github.com/Zar-Manah/opencode-android)
 [![Architecture](https://img.shields.io/badge/Arch-arm64--v8a-blue?style=for-the-badge)](https://github.com/Zar-Manah/opencode-android)
-[![No Root Required](https://img.shields.io/badge/Root-NOT%20REQUIRED-success?style=for-the-badge)](https://github.com/Zar-Manah/opencode-android)
+[![No Root Required](https://img.shields.io/badge/Root-NO%20ROOT%20REQUIRED-success?style=for-the-badge)](https://github.com/Zar-Manah/opencode-android)
 [![Crafted in Spain](https://img.shields.io/badge/Crafted%20in-Spain%20%F0%9F%87%AA%F0%9F%87%B8-FFD700?style=for-the-badge)](https://github.com/Zar-Manah/opencode-android)
 [![License](https://img.shields.io/badge/License-GPL%20v3-yellow?style=for-the-badge)](LICENSE)
 
-> **The first fully autonomous, native AI coding agent for Android.**  
-> Pre-bundled with Debian, Node.js 24, Git, build tools, a persistent cognitive memory layer, and full device interaction — **no root required**.
+> **Plug and play OpenCode app for Android: full device control and APK creator (NO ROOT REQUIRED), persistent cognitive memory, 24/7 daemon mode, a fully autonomous AI coding agent on your phone. Crafted in Spain 🇪🇸.**
 
 ---
 
