@@ -100,7 +100,7 @@ To grant OpenCode full device control (taps, keys, screen capture, and app insta
 4. Return and tap 'Continue to OpenCode' if it doesn't open automatically.
 
 ### Step 3: Start Coding
-The OpenCode terminal interface will automatically initialize. Simply type your prompt, pick your model, and start building!
+On first launch, wait a couple of minutes and the OpenCode terminal interface will initialize automatically. Simply type your prompt, pick your model, and start building!
 
 ---
 
