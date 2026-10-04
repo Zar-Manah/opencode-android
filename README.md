@@ -93,9 +93,11 @@ adb install -r opencode.apk
 ```
 
 ### Step 2: Grant Permissions
-When you first launch OpenCode, you will be prompted to grant two standard permissions:
-1. **All Files Access (Storage)**: Allows OpenCode to access your project files in `/sdcard` and sync workspaces.
-2. **Accessibility Service**: Enables the AI agent to interact with device apps, inspect UI elements, and assist with on-screen workflows.
+To grant OpenCode full device control (taps, keys, screen capture, and app installation), follow these steps:
+1. Tap '1. Go to Accessibility' and select OpenCode — at first you'll get a message that you can't select it, but it's important you tap it anyway so the three dots from step 2 appear, then return here.
+2. Tap '2. Unlock (3 dots)', tap the 3 dots (⋮) in the top right corner, and select 'Allow restricted settings'. Then go back to step one and now it will let you select OpenCode.
+3. Tap '3. Files Access' to grant permission to manage all files.
+4. Return and tap 'Continue to OpenCode' if it doesn't open automatically.
 
 ### Step 3: Start Coding
 The OpenCode terminal interface will automatically initialize. Simply type your prompt, pick your model, and start building!
