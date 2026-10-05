@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="icon.png" width="128" alt="OpenCode icon" />
+</p>
+
 # OpenCode for Android 🤖📱
 
 [![GitHub Release](https://img.shields.io/github/v/release/Zar-Manah/opencode-android?color=7C3AED&style=for-the-badge&logo=android)](https://github.com/Zar-Manah/opencode-android/releases/latest)
