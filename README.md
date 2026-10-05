@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="icon-card.png" width="128" alt="OpenCode icon" />
+  <img src="opencode-icon.png" width="128" alt="OpenCode icon" />
 </p>
 
 # OpenCode for Android 🤖📱
