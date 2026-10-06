@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- OpenCode: active action pill with emerald background and highlighted border -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+    <solid android:color="#00897B" />
+    <stroke android:width="2dp" android:color="#00E676" />
+    <corners android:radius="20dp" />
+</shape>

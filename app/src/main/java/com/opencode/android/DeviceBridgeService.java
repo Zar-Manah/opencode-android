@@ -91,14 +91,7 @@ public class DeviceBridgeService extends AccessibilityService {
 
     @Override
     public void onAccessibilityEvent(AccessibilityEvent e) {
-        if (e == null) return;
-        CharSequence pkg = e.getPackageName();
-        if (pkg != null) {
-            String p = pkg.toString().toLowerCase();
-            if (p.contains("packageinstaller") || p.contains("installer") || p.contains("systemui")) {
-                tryClickInstallButton();
-            }
-        }
+        // Accessibility bridge for pc CLI only. Do not perform automated clicks on system events.
     }
 
     @Override
@@ -406,12 +399,15 @@ public class DeviceBridgeService extends AccessibilityService {
         try {
             CharSequence pkg = root.getPackageName();
             String pkgStr = pkg != null ? pkg.toString().toLowerCase() : "";
-            if (pkgStr.contains("packageinstaller") || pkgStr.contains("installer")
-                || pkgStr.contains("systemui") || pkgStr.contains("android")) {
+            boolean isInstaller = pkgStr.equals("com.android.packageinstaller")
+                || pkgStr.equals("com.google.android.packageinstaller")
+                || pkgStr.equals("com.coloros.packageinstaller")
+                || pkgStr.equals("com.oplus.appdetail")
+                || pkgStr.endsWith(".packageinstaller");
+            if (isInstaller) {
 
                 // 1. By resource IDs common to Android PackageInstaller
                 String[] candidateIds = new String[]{
-                    "android:id/button1",
                     "com.android.packageinstaller:id/ok_button",
                     "com.google.android.packageinstaller:id/ok_button",
                     "com.android.packageinstaller:id/install_confirm_button",
@@ -430,9 +426,9 @@ public class DeviceBridgeService extends AccessibilityService {
                     }
                 }
 
-                // 2. By common localized text
+                // 2. By common localized text inside package installer only
                 String[] candidateTexts = new String[]{
-                    "Install", "Instalar", "Update", "Actualizar", "Aceptar", "OK"
+                    "Install", "Instalar", "Update", "Actualizar"
                 };
                 for (String txt : candidateTexts) {
                     List<AccessibilityNodeInfo> nodes = root.findAccessibilityNodeInfosByText(txt);

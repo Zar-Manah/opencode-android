@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:weightSum="3"
+    android:paddingTop="2dp"
+    android:paddingBottom="2dp">
+
+    <Button
+        android:id="@+id/ocode_action_exit"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:layout_marginStart="4dp"
+        android:layout_marginEnd="4dp"
+        android:gravity="center"
+        android:textAllCaps="false"
+        android:textSize="14sp" />
+
+    <Button
+        android:id="@+id/ocode_action_wakelock"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:layout_marginStart="4dp"
+        android:layout_marginEnd="4dp"
+        android:gravity="center"
+        android:textAllCaps="false"
+        android:textSize="14sp" />
+
+    <Button
+        android:id="@+id/ocode_action_server"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:layout_marginStart="4dp"
+        android:layout_marginEnd="4dp"
+        android:gravity="center"
+        android:textAllCaps="false"
+        android:textSize="14sp" />
+
+</LinearLayout>

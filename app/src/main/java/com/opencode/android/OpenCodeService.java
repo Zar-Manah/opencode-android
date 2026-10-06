@@ -11,6 +11,8 @@ import android.os.IBinder;
 import android.os.PowerManager;
 import android.system.Os;
 import android.util.Log;
+import android.widget.RemoteViews;
+import android.content.SharedPreferences;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -32,9 +34,15 @@ public class OpenCodeService extends Service {
     private static final String TAG = "OpenCodeService";
     static final int PORT = 4096;
 
+    public static final String ACTION_STOP_SERVICE = "com.opencode.android.ACTION_STOP_SERVICE";
+    public static final String ACTION_TOGGLE_24_7 = "com.opencode.android.ACTION_TOGGLE_24_7";
+    public static final String ACTION_TOGGLE_SERVER = "com.opencode.android.ACTION_TOGGLE_SERVER";
+
     private Process server;
     private PowerManager.WakeLock wakeLock;
     private NotificationManager notifyManager;
+    private volatile boolean serverRunning = false;
+    private volatile boolean is24_7 = false;
 
     private void progress(String msg) {
         try {
@@ -58,17 +66,103 @@ public class OpenCodeService extends Service {
     @Override
     public void onCreate() {
         super.onCreate();
-        PowerManager pm = (PowerManager) getSystemService(POWER_SERVICE);
-        if (pm != null) {
-            wakeLock = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "opencode:server");
-            wakeLock.acquire();
+        SharedPreferences prefs = getSharedPreferences("opencode_prefs", MODE_PRIVATE);
+        is24_7 = prefs.getBoolean("pref_24_7", false);
+        if (is24_7) {
+            acquireWakeLock();
         }
         startForeground(1, buildNotification());
     }
 
+    private synchronized void acquireWakeLock() {
+        if (wakeLock == null) {
+            PowerManager pm = (PowerManager) getSystemService(POWER_SERVICE);
+            if (pm != null) {
+                wakeLock = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "opencode:24_7");
+            }
+        }
+        if (wakeLock != null && !wakeLock.isHeld()) {
+            wakeLock.acquire();
+            Log.i(TAG, "WakeLock acquired (24/7 mode enabled)");
+        }
+    }
+
+    private synchronized void releaseWakeLock() {
+        if (wakeLock != null && wakeLock.isHeld()) {
+            wakeLock.release();
+            Log.i(TAG, "WakeLock released (24/7 mode disabled)");
+        }
+    }
+
+    private synchronized void stopServer() {
+        Log.i(TAG, "stopServer called");
+        if (server != null) {
+            try {
+                server.destroy();
+            } catch (Exception ignored) {}
+            server = null;
+        }
+        serverRunning = false;
+        updateNotification();
+    }
+
+    private synchronized boolean isServerAlive() {
+        if (server != null) {
+            try {
+                if (server.isAlive()) return true;
+            } catch (Exception ignored) {}
+        }
+        return serverRunning;
+    }
+
+    private void updateNotification() {
+        try {
+            if (notifyManager == null) {
+                notifyManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+            }
+            if (notifyManager != null) {
+                notifyManager.notify(1, buildNotification());
+            }
+        } catch (Exception ignored) {}
+    }
+
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        if (server == null) {
+        if (intent != null && intent.getAction() != null) {
+            String act = intent.getAction();
+            if (ACTION_STOP_SERVICE.equals(act)) {
+                Log.i(TAG, "ACTION_STOP_SERVICE intent received");
+                stopServer();
+                releaseWakeLock();
+                stopForeground(true);
+                stopSelf();
+                System.exit(0);
+                return START_NOT_STICKY;
+            } else if (ACTION_TOGGLE_24_7.equals(act)) {
+                Log.i(TAG, "ACTION_TOGGLE_24_7 intent received");
+                is24_7 = !is24_7;
+                getSharedPreferences("opencode_prefs", MODE_PRIVATE)
+                    .edit().putBoolean("pref_24_7", is24_7).apply();
+                if (is24_7) {
+                    acquireWakeLock();
+                } else {
+                    releaseWakeLock();
+                }
+                updateNotification();
+                return START_STICKY;
+            } else if (ACTION_TOGGLE_SERVER.equals(act)) {
+                Log.i(TAG, "ACTION_TOGGLE_SERVER intent received");
+                if (isServerAlive()) {
+                    stopServer();
+                } else {
+                    new Thread(this::bootServer).start();
+                }
+                updateNotification();
+                return START_STICKY;
+            }
+        }
+
+        if (server == null && !serverRunning) {
             new Thread(this::bootServer).start();
         }
         new Thread(this::ensureFactory).start();
@@ -289,12 +383,16 @@ public class OpenCodeService extends Service {
             env.put("SHELL", "/system/bin/sh");
             pb.redirectErrorStream(true);
             server = pb.start();
+            serverRunning = true;
+            updateNotification();
             final Process p = server;
             new Thread(() -> {
                 try (BufferedReader r = new BufferedReader(new InputStreamReader(p.getInputStream()))) {
                     String line;
                     while ((line = r.readLine()) != null) Log.i(TAG, line);
                 } catch (Exception ignored) {}
+                serverRunning = false;
+                updateNotification();
             }).start();
             Log.i(TAG, "server started");
         } catch (Exception e) {
@@ -650,17 +748,70 @@ public class OpenCodeService extends Service {
         String ch = "opencode";
         NotificationManager nm = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
         if (nm != null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            nm.createNotificationChannel(new NotificationChannel(ch, "OpenCode",
-                NotificationManager.IMPORTANCE_MIN));
+            NotificationChannel chan = new NotificationChannel(ch, "OpenCode",
+                NotificationManager.IMPORTANCE_LOW);
+            chan.setShowBadge(false);
+            nm.createNotificationChannel(chan);
         }
-        Intent i = new Intent(this, MainActivity.class);
-        PendingIntent pi = PendingIntent.getActivity(this, 0, i,
-            PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
+
+        Intent appIntent = new Intent(this, MainActivity.class);
+        PendingIntent appPending = PendingIntent.getActivity(this, 0, appIntent,
+            PendingIntent.FLAG_UPDATE_CURRENT | (Build.VERSION.SDK_INT >= 23 ? PendingIntent.FLAG_IMMUTABLE : 0));
+
+        Intent exitIntent = new Intent(this, OpenCodeService.class).setAction(ACTION_STOP_SERVICE);
+        PendingIntent exitPending = PendingIntent.getService(this, 1, exitIntent,
+            PendingIntent.FLAG_UPDATE_CURRENT | (Build.VERSION.SDK_INT >= 23 ? PendingIntent.FLAG_IMMUTABLE : 0));
+
+        Intent toggle247Intent = new Intent(this, OpenCodeService.class).setAction(ACTION_TOGGLE_24_7);
+        PendingIntent toggle247Pending = PendingIntent.getService(this, 2, toggle247Intent,
+            PendingIntent.FLAG_UPDATE_CURRENT | (Build.VERSION.SDK_INT >= 23 ? PendingIntent.FLAG_IMMUTABLE : 0));
+
+        Intent toggleServerIntent = new Intent(this, OpenCodeService.class).setAction(ACTION_TOGGLE_SERVER);
+        PendingIntent toggleServerPending = PendingIntent.getService(this, 3, toggleServerIntent,
+            PendingIntent.FLAG_UPDATE_CURRENT | (Build.VERSION.SDK_INT >= 23 ? PendingIntent.FLAG_IMMUTABLE : 0));
+
+        RemoteViews actionsView = new RemoteViews(getPackageName(), R.layout.ocode_notification_actions);
+
+        // Exit button: dark neutral pill, text "Exit"
+        actionsView.setInt(R.id.ocode_action_exit, "setBackgroundResource", R.drawable.open_action_pill);
+        actionsView.setTextColor(R.id.ocode_action_exit, 0xFFEDEDED);
+        actionsView.setTextViewText(R.id.ocode_action_exit, "Exit");
+        actionsView.setOnClickPendingIntent(R.id.ocode_action_exit, exitPending);
+
+        // 24/7 button: illuminates emerald when active, dark when inactive
+        boolean active24_7 = is24_7 && (wakeLock != null && wakeLock.isHeld());
+        actionsView.setInt(R.id.ocode_action_wakelock, "setBackgroundResource",
+            active24_7 ? R.drawable.open_action_pill_active : R.drawable.open_action_pill);
+        actionsView.setTextColor(R.id.ocode_action_wakelock,
+            active24_7 ? 0xFFFFFFFF : 0xFF9CA3AF);
+        actionsView.setTextViewText(R.id.ocode_action_wakelock, "24/7");
+        actionsView.setOnClickPendingIntent(R.id.ocode_action_wakelock, toggle247Pending);
+
+        // Server button: illuminates emerald when active/running, dark when inactive
+        boolean activeServer = isServerAlive();
+        actionsView.setInt(R.id.ocode_action_server, "setBackgroundResource",
+            activeServer ? R.drawable.open_action_pill_active : R.drawable.open_action_pill);
+        actionsView.setTextColor(R.id.ocode_action_server,
+            activeServer ? 0xFFFFFFFF : 0xFF9CA3AF);
+        actionsView.setTextViewText(R.id.ocode_action_server, "Server");
+        actionsView.setOnClickPendingIntent(R.id.ocode_action_server, toggleServerPending);
+
         Notification.Builder b = (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
             ? new Notification.Builder(this, ch) : new Notification.Builder(this);
-        return b.setContentTitle("OpenCode")
+
+        b.setContentTitle("OpenCode")
             .setSmallIcon(getResources().getIdentifier("ic_launcher", "mipmap", getPackageName()))
-            .setContentIntent(pi).build();
+            .setContentIntent(appPending)
+            .setOngoing(true)
+            .setShowWhen(false)
+            .setCustomContentView(actionsView);
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            b.setStyle(new Notification.DecoratedCustomViewStyle());
+            b.setCustomBigContentView(actionsView);
+        }
+
+        return b.build();
     }
 
     @Override

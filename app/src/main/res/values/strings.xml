@@ -2,4 +2,7 @@
 <resources>
     <string name="app_name">OpenCode</string>
     <string name="server_running">OpenCode</string>
+    <string name="notification_action_exit">Exit</string>
+    <string name="notification_action_wake_lock">24/7</string>
+    <string name="notification_action_server">Server</string>
 </resources>

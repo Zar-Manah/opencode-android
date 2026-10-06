@@ -60,8 +60,24 @@ Unlike stateless sessions that forget context when restarted:
 - **Episodic Long-Term Memory**: Autonomous memory engine (`~/.config/opencode/memory/memory.json`) that records learnings, project capabilities, device configuration, and user preferences across sessions.
 - **Self-Improving Agents**: OpenCode updates its memory after verifying builds and features, preserving patterns learned on the device.
 
-### 5. 🔋 24/7 Background Service
-- Runs as a persistent foreground service with partial wake-locks, allowing long-running agentic tasks and builds to complete even with the screen turned off.
+### 5. 🎛️ Foreground Notification Control Panel (`Exit` | `24/7` | `Server`)
+A sleek 3-button control banner lives directly in your Android notification drawer for instantaneous state management without entering settings menus:
+
+```
+┌─────────────────────────────────────────────────────────┐
+│ OpenCode                                                │
+│ ┌──────────────┐   ┌──────────────┐   ┌──────────────┐  │
+│ │     Exit     │   │     24/7     │   │    Server    │  │
+│ └──────────────┘   └──────────────┘   └──────────────┘  │
+└─────────────────────────────────────────────────────────┘
+```
+
+* **🟢 `Server` (Engine & Agent Access — Active by Default)**:
+  Controls the local OpenCode core engine listening on `127.0.0.1:4096`. **Must remain active** for the application interface to communicate with the AI engine and execute commands. Illuminates in bright emerald green when running. Tapping it suspends/resumes the server on demand.
+* **⚡ `24/7` (Battery Saver & WakeLock Toggle)**:
+  Controls the CPU `PARTIAL_WAKE_LOCK`. **Disabled by default** to keep your phone cold and conserve 100% of battery when the screen turns off. Tap to illuminate in green when running intensive autonomous builds, large repo indexing, or overnight agent tasks.
+* **🛑 `Exit` (Clean Process Shutdown)**:
+  One-tap graceful shutdown: terminates the local server process, releases all locks, clears notifications, and exits background memory cleanly.
 
 ---
 
