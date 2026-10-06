@@ -10,7 +10,7 @@
 [![Crafted with Passion in Spain](https://img.shields.io/badge/Crafted%20with%20Passion%20in-Spain%20%F0%9F%87%AA%F0%9F%87%B8-FFD700?style=for-the-badge)](https://github.com/Zar-Manah/opencode-android-apk)
 [![License](https://img.shields.io/badge/License-GPL%20v3-yellow?style=for-the-badge)](LICENSE.md)
 
-> **Plug-and-play OpenCode APK for Android: the first fully autonomous, native AI software engineering powerhouse on your phone. Full device control & on-device APK factory (NO ROOT REQUIRED), flawless virtual keyboard & voice dictation, persistent cognitive memory, 24/7 background daemon, and complete offline toolchain (JDK 21, Gradle, Android SDK). Crafted with passion in Spain 🇪🇸.**
+> **The first fully autonomous, native AI software engineering workstation and Android app factory directly on your phone. Full device control (NO ROOT REQUIRED), flawless virtual keyboard & voice dictation, zero emulation overhead, persistent cognitive memory, and complete offline toolchains (JDK 21, Gradle, Android SDK). Crafted with passion in Spain 🇪🇸.**
 
 ---
 
@@ -24,48 +24,46 @@ Transform your Android smartphone or tablet into a state-of-the-art AI software 
 
 1. **Download `opencode.apk`** from [GitHub Releases](https://github.com/Zar-Manah/opencode-android-apk/releases/latest).
 2. **Install** the APK on your Android device (Android 8.0+ / `arm64-v8a`).
-3. **Open the app** and complete the guided 4-step setup.
+3. **Open the app** and follow the streamlined 4-step setup.
 4. **You're ready!** OpenCode launches immediately into the native interface. Works out of the box with free OpenCode models as well as custom API keys.
 
 ---
 
-## 🌟 Why OpenCode APK for Android is Unique
+## 🌟 Why OpenCode for Android Solves Every Mobile Pain Point
 
-Traditional mobile terminal ports were never built for serious software engineering: virtual keyboards freeze, voice dictation drops inputs, background tasks get killed by aggressive Android power management, container emulation slows down compilation, and agents remain trapped in isolated sandboxes unable to see or interact with the operating system.
+Anyone who has tried coding or running AI agents on Android knows the frustrating reality of existing solutions: virtual keyboards freeze and drop characters, voice dictation crashes the terminal, aggressive Android battery management kills long-running background tasks, PRoot containers run agonizingly slow and overheat the phone, agents are trapped in isolated sandboxes unable to interact with the device, and you still need a desktop PC to compile native apps.
 
-**OpenCode APK for Android solves every single one of these problems:**
+**OpenCode APK for Android was engineered to solve every single one of these problems:**
 
-### 1. ⌨️ Smooth Virtual Keyboard & Voice Dictation
-- **Native Keyboard Integration**: Gboard, Samsung Keyboard, SwiftKey, and physical keyboards work seamlessly. No key-repeats, no frozen input buffers, and no missed keystrokes.
-- **Full Voice-to-Text Support**: Dictate complex prompts, code refactors, or terminal commands using your mobile keyboard's microphone button without breaking cursor positions or hanging the interface.
-- **Effortless Mobile Editing**: Fluid multiline editing, full clipboard support, smooth scrolling, and mobile-friendly touch interactions.
+### 1. ⌨️ Flawless Virtual Keyboard & Voice-to-Text Dictation
+- **Zero Input Glitches**: Works effortlessly with native virtual keyboards (Gboard, Samsung Keyboard, SwiftKey) and external hardware keyboards. No repeated key bugs, no input buffer freezing, and no cursor jumping.
+- **Native Voice Dictation**: Dictate prompts, architectural plans, or code refactors directly using your keyboard's microphone button without breaking prompt positions or crashing the session.
+- **Intuitive Touch Controls**: Seamless multiline editing, full clipboard copy-paste, and natural touch navigation.
 
-### 2. 🚀 Pure Native Execution (Zero Emulation Overhead)
-- **Direct User-Space Performance**: Runs natively on Android ARM64 via an ultra-fast musl dynamic linker (`ld-musl-aarch64`). No heavy PRoot virtualization, no emulated system calls, and minimal RAM footprint.
-- **Cool & Battery Efficient**: Keeps your phone completely cool during regular usage, conserving battery while delivering instantaneous response times.
-- **Instant App Launch**: Starts in seconds with zero container boot delay.
+### 2. 🚀 Pure Native arm64 Execution (Zero PRoot / Container Overhead)
+- **Direct User-Space Linker**: Runs natively on Android ARM64 via a high-performance musl dynamic linker (`ld-musl-aarch64`). Completely eliminates slow PRoot containers and `ptrace` system call emulation penalties.
+- **Cool & Battery-Friendly**: Keeps your phone completely cool and preserves battery during normal development sessions, delivering instant launch times (<1s) and fluid responsiveness.
 
-### 3. 📱 Full Phone Control (No Root Required)
-OpenCode is not confined to an isolated sandbox — it has hands and eyes on the mobile operating system up to the theoretical limit of unrooted Android:
-- **Eyes (`pc shot` & `pc dump`)**: Real-time high-speed screenshot capture (<0.3s) and XML UI accessibility hierarchy tree inspection.
-- **Hands (`pc tap` & `pc swipe`)**: Tap UI buttons, scroll through apps, and interact with native Android applications.
-- **Typing & Navigation (`pc text` & `pc key`)**: Type directly into active inputs and trigger system navigation keys (Back, Home).
-- **App Management**: Launch installed apps (`pc open <package>`), query packages (`pc list`), read logs, and post system notifications (`pc notify`).
+### 3. 📱 Full Device Interaction Without Root (NO ROOT REQUIRED)
+OpenCode breaks out of the sandbox to provide true agentic capability on Android up to the theoretical limit of unrooted operating systems:
+- **Eyes (`pc shot` & `pc dump`)**: Real-time ultra-fast screenshot analysis (<0.3s) and complete accessibility view hierarchy XML inspection.
+- **Hands (`pc tap` & `pc swipe`)**: Taps UI buttons, navigates menus, and scrolls through applications.
+- **Typing & Navigation (`pc text` & `pc key`)**: Types into active text fields and sends system navigation keys (Back, Home).
+- **Application Control**: Launches apps (`pc open <package>`), lists installed packages (`pc list`), reads logs, and delivers notifications (`pc notify`).
 
 ### 4. 🏭 Autonomous On-Device Android App Factory 🔥 (100% Offline)
-OpenCode can design, scaffold, compile, sign, install, and visually verify native Android applications directly on your phone:
-- **Pre-bundled Toolchain**: OpenJDK 21 (`java`, `javac`, `keytool`), Android SDK (platforms `android-35`, build-tools `35.0.0` and `34.0.0`, native `d8`, `apksigner`, `aapt2`), and `gradle-oc`.
-- **Zero Internet Required for Builds**: All compilers and core dependencies are pre-packaged inside the APK. No external PC, no USB cables, and no active network connection required to compile apps.
-- **Autonomous Deployment**: Installs compiled APKs directly onto the phone via the local bridge (`pc install app/build/outputs/apk/debug/*-debug.apk`).
-- **Visual Verification Loop**: Takes a screenshot of the newly launched app (`pc shot`), analyzes layout hierarchy (`pc dump`), and iterates on the code autonomously until pixel-perfect.
+Turn your phone into a self-contained mobile software factory capable of designing, scaffolding, compiling, signing, installing, and visually verifying native Android applications:
+- **Bundled Toolchain**: Pre-packaged OpenJDK 21, Android SDK (platforms `android-35`, build-tools `35.0.0` and `34.0.0`, native `d8`, `apksigner`, `aapt2`), and `gradle-oc`.
+- **Zero PC & Zero Internet Required for Builds**: Compiles and signs APKs entirely on-device without an external computer or network connectivity.
+- **Autonomous Deployment & Inspection Loop**: Installs the compiled APK via the local bridge (`pc install`), launches the app, captures screenshots (`pc shot`), analyzes the UI (`pc dump`), and iterates until code and interface are pixel-perfect.
 
-### 5. 🧠 Persistent Cognitive Architecture
-Unlike stateless sessions that forget context when restarted:
-- **Episodic Long-Term Memory**: Autonomous memory engine (`~/.config/opencode/memory/memory.json`) that records learnings, project capabilities, device configuration, and user preferences across sessions.
-- **Self-Improving Agents**: OpenCode updates its memory after verifying builds and features, preserving patterns learned on the device.
+### 5. 🧠 Persistent Cognitive Memory Architecture
+Unlike stateless terminal sessions that forget all context when closed:
+- **Episodic Long-Term Memory**: Autonomous memory engine (`~/.config/opencode/memory/memory.json`) preserves project context, device characteristics, architectural decisions, and user preferences across sessions.
+- **Continuous Learning**: Retains successful patterns and verification strategies learned on the device.
 
-### 6. 🔋 24/7 Background Daemon & Quick-Action Banner
-Android aggressively kills background processes. OpenCode includes an optimized foreground notification control center:
+### 6. 🔋 24/7 Background Daemon & Clean Notification Center
+Android's aggressive memory cleaner terminates background tasks. OpenCode includes an optimized foreground notification control center:
 
 ```
 ┌─────────────────────────────────────────────────────────┐
@@ -76,8 +74,8 @@ Android aggressively kills background processes. OpenCode includes an optimized 
 └─────────────────────────────────────────────────────────┘
 ```
 
-- **⚡ `24/7` (Battery Saver & WakeLock Toggle)**: Controls the CPU `PARTIAL_WAKE_LOCK`. Disabled by default to conserve 100% of battery when the screen turns off. Tap to illuminate in green when running intensive autonomous builds, large repo indexing, or overnight agent tasks.
-- **🛑 `Exit` (Clean Shutdown)**: One-tap graceful shutdown: terminates background processes, releases all wake locks, removes notifications, and frees system RAM cleanly.
+- **⚡ `24/7` (Battery Saver & WakeLock Toggle)**: Keeps the CPU awake via partial wake-lock. Disabled by default to preserve 100% of battery when the screen is off; tap to activate for intensive background builds, repository indexing, or overnight agent runs.
+- **🛑 `Exit` (Clean Shutdown)**: Instant one-tap graceful termination: frees all background processes, releases system locks, removes notifications, and restores RAM.
 
 ---
 
@@ -122,7 +120,7 @@ When launching OpenCode for the first time, a streamlined setup screen guides yo
 ```
 
 1. **`OpenCode` (`Downloaded apps → OpenCode`)**:
-   Tap the button, select **Downloaded apps**, and select **OpenCode**. *(On Android 13+, you will initially see a message that the setting is restricted; tap it anyway so the 3 dots appear in the next step, then return).*
+   Tap the button, select **Downloaded apps**, and select **OpenCode**. *(On Android 13+, tap through the restricted settings prompt if displayed).*
 2. **`App info` (`Restricted settings`)**:
    Tap the button, tap the **3 dots (⋮)** in the top right corner, and select **'Allow restricted settings'**. Return to step 1 and enable OpenCode.
 3. **`Allow files` (`Manage all files`)**:
