@@ -60,24 +60,24 @@ Unlike stateless sessions that forget context when restarted:
 - **Episodic Long-Term Memory**: Autonomous memory engine (`~/.config/opencode/memory/memory.json`) that records learnings, project capabilities, device configuration, and user preferences across sessions.
 - **Self-Improving Agents**: OpenCode updates its memory after verifying builds and features, preserving patterns learned on the device.
 
-### 5. 🎛️ Foreground Notification Control Panel (`Exit` | `24/7` | `Server`)
-A sleek 3-button control banner lives directly in your Android notification drawer for instantaneous state management without entering settings menus:
+### 5. 🎛️ Foreground Notification Control Panel (`Exit` | `24/7`) & Automatic Server Lifecycle
+A streamlined 2-button control banner lives directly in your Android notification drawer for instantaneous state management without unnecessary clutter:
 
 ```
 ┌─────────────────────────────────────────────────────────┐
 │ OpenCode                                                │
-│ ┌──────────────┐   ┌──────────────┐   ┌──────────────┐  │
-│ │     Exit     │   │     24/7     │   │    Server    │  │
-│ └──────────────┘   └──────────────┘   └──────────────┘  │
+│ ┌─────────────────────────┐   ┌───────────────────────┐ │
+│ │          Exit           │   │         24/7          │ │
+│ └─────────────────────────┘   └───────────────────────┘ │
 └─────────────────────────────────────────────────────────┘
 ```
 
-* **🟢 `Server` (Engine & Agent Access — Active by Default)**:
-  Controls the local OpenCode core engine listening on `127.0.0.1:4096`. **Must remain active** for the application interface to communicate with the AI engine and execute commands. Illuminates in bright emerald green when running. Tapping it suspends/resumes the server on demand.
+* **⚡ Automatic Server Lifecycle (Zero Manual Intervention)**:
+  The local OpenCode core engine listening on `127.0.0.1:4096` starts automatically upon app launch and manages its own lifecycle transparently. There is no longer any need to manually toggle or keep a "Server" button pressed. While the app is open, the AI agent has full device control, shell execution, and workspace access. When you close or exit the app, the server process shuts down cleanly and automatically, guaranteeing zero background battery drain or leftover processes.
 * **⚡ `24/7` (Battery Saver & WakeLock Toggle)**:
-  Controls the CPU `PARTIAL_WAKE_LOCK`. **Disabled by default** to keep your phone cold and conserve 100% of battery when the screen turns off. Tap to illuminate in green when running intensive autonomous builds, large repo indexing, or overnight agent tasks.
+  Controls the CPU `PARTIAL_WAKE_LOCK`. **Disabled by default** to keep your phone cold and conserve 100% of battery when the screen turns off. Tap to illuminate in emerald green when running intensive autonomous builds, large repo indexing, or overnight background agent tasks.
 * **🛑 `Exit` (Clean Process Shutdown)**:
-  One-tap graceful shutdown: terminates the local server process, releases all locks, clears notifications, and exits background memory cleanly.
+  One-tap graceful shutdown: terminates the local server process, releases all wake locks, clears notification banners, and cleans up background memory instantly.
 
 ---
 
