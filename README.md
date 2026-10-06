@@ -2,7 +2,7 @@
   <img src="opencode-icon.png" width="128" height="128" alt="OpenCode Android Logo" />
 </p>
 
-# OpenCode Desktop-Style for Android 📱⚡
+# OpenCode for Android 📱⚡
 
 [![OpenCode Release](https://img.shields.io/github/v/release/Zar-Manah/opencode-android-apk?style=for-the-badge&color=blue)](https://github.com/Zar-Manah/opencode-android-apk/releases/latest)
 [![Platform](https://img.shields.io/badge/Platform-Android%208.0%2B%20%7C%20arm64--v8a-brightgreen?style=for-the-badge)](https://github.com/Zar-Manah/opencode-android-apk)
@@ -10,7 +10,7 @@
 [![Crafted with Passion in Spain](https://img.shields.io/badge/Crafted%20with%20Passion%20in-Spain%20%F0%9F%87%AA%F0%9F%87%B8-FFD700?style=for-the-badge)](https://github.com/Zar-Manah/opencode-android-apk)
 [![License](https://img.shields.io/badge/License-GPL%20v3-yellow?style=for-the-badge)](LICENSE.md)
 
-> **Plug-and-play OpenCode desktop-native app for Android: full device control & autonomous on-device APK creator (NO ROOT REQUIRED), persistent cognitive memory, 24/7 background daemon, and complete offline toolchain (JDK 21, Gradle, Android SDK). Crafted with passion in Spain 🇪🇸.**
+> **Plug-and-play OpenCode app for Android: full device control & autonomous on-device APK creator (NO ROOT REQUIRED), persistent cognitive memory, 24/7 background daemon, and complete offline toolchain (JDK 21, Gradle, Android SDK). Crafted with passion in Spain 🇪🇸.**
 
 ---
 
@@ -25,19 +25,19 @@ Transform your Android smartphone or tablet into a state-of-the-art AI software 
 1. **Download `opencode.apk`** from [GitHub Releases](https://github.com/Zar-Manah/opencode-android-apk/releases/latest).
 2. **Install** the APK on your Android device (Android 8.0+ / `arm64-v8a`).
 3. **Open the app** and complete the guided 4-step setup.
-4. **You're ready!** OpenCode launches immediately into the native desktop-class interface. Works out of the box with free OpenCode models as well as custom API keys.
+4. **You're ready!** OpenCode launches immediately into the native interface. Works out of the box with free OpenCode models as well as custom API keys.
 
 ---
 
-## 🌟 Why OpenCode Desktop for Android is Unique
+## 🌟 Why OpenCode for Android is Unique
 
 Traditional mobile terminal ports were never built for full software engineering: slow container emulation, virtual keyboards that freeze, background tasks killed by power management, and sandboxes unable to interact with the device.
 
-**OpenCode Desktop for Android redesigns the entire stack from the ground up:**
+**OpenCode for Android redesigns the entire stack from the ground up:**
 
-### 1. 🚀 Native Desktop-Style Architecture
+### 1. 🚀 High-Performance Native Architecture
 - **Pure Native Execution**: The official OpenCode engine runs natively on Android user space via a high-performance musl dynamic linker (`ld-musl-aarch64`). No slow emulation containers, no PRoot filesystem overhead, and zero performance penalty.
-- **Hardware-Accelerated UI**: Rich, fluid desktop-grade interface with full keyboard, clipboard, and touch support.
+- **Hardware-Accelerated UI**: Rich, fluid interface with full keyboard, clipboard, and touch support.
 - **Instant Launch**: Starts in seconds with minimal memory footprint.
 
 ### 2. 📱 Full Phone Control (No Root Required)
