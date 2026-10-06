@@ -2,7 +2,7 @@
   <img src="opencode-icon.png" width="128" height="128" alt="OpenCode Android Logo" />
 </p>
 
-# OpenCode Desktop for Android 📱⚡
+# OpenCode Desktop-Style for Android 📱⚡
 
 [![OpenCode Release](https://img.shields.io/github/v/release/Zar-Manah/opencode-android-apk?style=for-the-badge&color=blue)](https://github.com/Zar-Manah/opencode-android-apk/releases/latest)
 [![Platform](https://img.shields.io/badge/Platform-Android%208.0%2B%20%7C%20arm64--v8a-brightgreen?style=for-the-badge)](https://github.com/Zar-Manah/opencode-android-apk)
@@ -35,7 +35,7 @@ Traditional mobile terminal ports were never built for full software engineering
 
 **OpenCode Desktop for Android redesigns the entire stack from the ground up:**
 
-### 1. 🚀 Native Desktop-Class Architecture (Zero PRoot Overhead)
+### 1. 🚀 Native Desktop-Style Architecture
 - **Pure Native Execution**: The official OpenCode engine runs natively on Android user space via a high-performance musl dynamic linker (`ld-musl-aarch64`). No slow emulation containers, no PRoot filesystem overhead, and zero performance penalty.
 - **Hardware-Accelerated UI**: Rich, fluid desktop-grade interface with full keyboard, clipboard, and touch support.
 - **Instant Launch**: Starts in seconds with minimal memory footprint.
@@ -48,7 +48,7 @@ OpenCode is not just an editor — it has hands and eyes on the mobile operating
 - **Navigation (`pc key BACK` / `pc key HOME`)**: Triggers standard Android navigation keys.
 - **App Management**: Can launch apps (`pc open <package>`), query installed packages (`pc list`), read logs, and post notifications (`pc notify`).
 
-### 3. 🏭 Autonomous On-Device Android App Factory (100% Offline)
+### 3. 🏭 Autonomous On-Device Android App Factory 🔥
 OpenCode can design, scaffold, compile, sign, install, and visually verify native Android applications directly on your phone:
 - **Bundled Toolchain**: OpenJDK 21 (`java`, `javac`, `keytool`), Android SDK (platforms `android-35`, build-tools `35.0.0` and `34.0.0`, native `d8`, `apksigner`, `aapt2`), and `gradle-oc`.
 - **Zero Network Required**: All compiler toolchains and core dependencies are pre-bundled inside the APK. No external PC, no USB cable, and no active Internet connection needed for compilation.
