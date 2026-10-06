@@ -254,6 +254,14 @@ public class MainActivity extends Activity {
     @Override
     protected void onDestroy() {
         if (web != null) web.destroy();
+        android.content.SharedPreferences prefs =
+            getSharedPreferences("opencode_prefs", MODE_PRIVATE);
+        boolean is24_7 = prefs.getBoolean("pref_24_7", false);
+        if (isFinishing() && !is24_7) {
+            Intent exitIntent = new Intent(this, OpenCodeService.class)
+                .setAction(OpenCodeService.ACTION_STOP_SERVICE);
+            startService(exitIntent);
+        }
         super.onDestroy();
     }
 }

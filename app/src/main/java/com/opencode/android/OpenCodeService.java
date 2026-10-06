@@ -766,10 +766,6 @@ public class OpenCodeService extends Service {
         PendingIntent toggle247Pending = PendingIntent.getService(this, 2, toggle247Intent,
             PendingIntent.FLAG_UPDATE_CURRENT | (Build.VERSION.SDK_INT >= 23 ? PendingIntent.FLAG_IMMUTABLE : 0));
 
-        Intent toggleServerIntent = new Intent(this, OpenCodeService.class).setAction(ACTION_TOGGLE_SERVER);
-        PendingIntent toggleServerPending = PendingIntent.getService(this, 3, toggleServerIntent,
-            PendingIntent.FLAG_UPDATE_CURRENT | (Build.VERSION.SDK_INT >= 23 ? PendingIntent.FLAG_IMMUTABLE : 0));
-
         RemoteViews actionsView = new RemoteViews(getPackageName(), R.layout.ocode_notification_actions);
 
         // Exit button: dark neutral pill, text "Exit"
@@ -786,15 +782,6 @@ public class OpenCodeService extends Service {
             active24_7 ? 0xFFFFFFFF : 0xFF9CA3AF);
         actionsView.setTextViewText(R.id.ocode_action_wakelock, "24/7");
         actionsView.setOnClickPendingIntent(R.id.ocode_action_wakelock, toggle247Pending);
-
-        // Server button: illuminates emerald when active/running, dark when inactive
-        boolean activeServer = isServerAlive();
-        actionsView.setInt(R.id.ocode_action_server, "setBackgroundResource",
-            activeServer ? R.drawable.open_action_pill_active : R.drawable.open_action_pill);
-        actionsView.setTextColor(R.id.ocode_action_server,
-            activeServer ? 0xFFFFFFFF : 0xFF9CA3AF);
-        actionsView.setTextViewText(R.id.ocode_action_server, "Server");
-        actionsView.setOnClickPendingIntent(R.id.ocode_action_server, toggleServerPending);
 
         Notification.Builder b = (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
             ? new Notification.Builder(this, ch) : new Notification.Builder(this);
@@ -816,8 +803,8 @@ public class OpenCodeService extends Service {
 
     @Override
     public void onDestroy() {
-        if (server != null) server.destroy();
-        if (wakeLock != null && wakeLock.isHeld()) wakeLock.release();
+        stopServer();
+        releaseWakeLock();
         super.onDestroy();
     }
 
