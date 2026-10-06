@@ -1,0 +1,19 @@
+#!/system/bin/sh
+# pc: device control from OpenCode agent. Talks to local bridge at 127.0.0.1:4399.
+unset LD_LIBRARY_PATH
+B="http://127.0.0.1:4399"
+case "$1" in
+  ping) curl -s "$B/ping"; echo;;
+  shot) curl -s "$B/shot" -o "${2:-shot.png}"; echo "${2:-shot.png}";;
+  dump) curl -s "$B/dump";;
+  tap) curl -s "$B/tap?x=$2&y=$3"; echo;;
+  swipe) curl -s "$B/swipe?x1=$2&y1=$3&x2=$4&y2=$5&ms=${6:-300}"; echo;;
+  text) shift; curl -s --get --data-urlencode "t=$*" "$B/text"; echo;;
+  key) curl -s --get --data-urlencode "k=$2" "$B/key"; echo;;
+  open) curl -s --get --data-urlencode "p=$2" "$B/open"; echo;;
+  install) curl -s --get --data-urlencode "p=$2" "$B/install"; echo;;
+  shell) shift; curl -s --get --data-urlencode "c=$*" "$B/shell";;
+  notify) curl -s --get --data-urlencode "m=$2" --data-urlencode "t=$3" "$B/notify"; echo;;
+  list) curl -s --get --data-urlencode "f=$2" "$B/list";;
+  *) echo "usage: pc ping|shot [png]|dump|tap x y|swipe x1 y1 x2 y2 [ms]|text ...|key BACK|HOME|open pkg|install apk|shell cmd|notify msg|list [f]";;
+esac

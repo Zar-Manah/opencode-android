@@ -1,0 +1,7 @@
+#!/system/bin/sh
+# d8: standalone wrapper for Android D8 dexer
+if [ -z "${HOME:-}" ]; then export HOME="/data/user/0/a.opencode/files/server-home"; fi
+JAVA_BIN="$HOME/toolchain/bin/java"
+JAR="$HOME/android-sdk/build-tools/35.0.0/lib/d8.jar"
+if [ ! -f "$JAR" ]; then JAR="$HOME/android-sdk/build-tools/34.0.0/lib/d8.jar"; fi
+exec "$JAVA_BIN" -Djava.io.tmpdir="$HOME/tmp" -Xmx2G -cp "$JAR" com.android.tools.r8.D8 "$@"

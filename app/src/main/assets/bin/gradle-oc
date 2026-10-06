@@ -1,0 +1,20 @@
+#!/system/bin/sh
+# gradle-oc: mksh-safe on-device Gradle runner for Android.
+if [ -z "${HOME:-}" ]; then export HOME="/data/user/0/a.opencode/files/server-home"; fi
+TC="$HOME/toolchain"
+U="$TC/usr"
+export ANDROID_HOME="${ANDROID_HOME:-$HOME/android-sdk}"
+export ANDROID_SDK_ROOT="${ANDROID_SDK_ROOT:-$HOME/android-sdk}"
+export JAVA_HOME="$U/lib/jvm/java-21-openjdk"
+export GRADLE_USER_HOME="$HOME/.gradle"
+export LD_LIBRARY_PATH="$U/lib"
+export PATH="$HOME/bin:$TC/bin:$TC/usr/bin:$HOME/android-sdk/platform-tools:$HOME/android-sdk/build-tools/35.0.0:$HOME/android-sdk/build-tools/34.0.0:/system/bin:${PATH:-}"
+mkdir -p "$HOME/tmp" 2>/dev/null
+
+JAVA_BIN="$TC/bin/java"
+if [ ! -x "$JAVA_BIN" ]; then JAVA_BIN="$JAVA_HOME/bin/java"; fi
+
+exec "$JAVA_BIN" -Dorg.gradle.native=false -Duser.home="$HOME" \
+  -Djava.io.tmpdir="$HOME/tmp" \
+  -Xmx3g -classpath "$U/opt/gradle/lib/*" \
+  org.gradle.launcher.GradleMain "$@"

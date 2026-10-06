@@ -1,0 +1,148 @@
+#!/system/bin/sh
+# open-factory-setup: autonomous on-device toolchain (JDK21 + Gradle + SDK + ARM binaries).
+set -u
+H="${HOME:-/data/user/0/a.opencode/files/server-home}"
+export HOME="$H"
+TC="$H/toolchain"
+SDK="$H/android-sdk"
+mkdir -p "$H/tmp" "$H/bin" "$TC/bin" 2>/dev/null
+
+echo "== 1/5 Base toolchain =="
+if [ ! -x "$TC/usr/lib/jvm/java-21-openjdk/bin/java" ] && [ ! -x "$TC/usr/lib/jvm/java-21-openjdk/bin/java.real" ]; then
+  mkdir -p "$TC"
+  if [ -f "$H/toolchain-native.tar.gz" ]; then
+    tar -xzf "$H/toolchain-native.tar.gz" -C "$TC" || { echo "ERROR extracting toolchain"; exit 1; }
+  elif [ -f "/sdcard/Download/toolchain-native.tar.gz" ]; then
+    tar -xzf "/sdcard/Download/toolchain-native.tar.gz" -C "$TC" || { echo "ERROR extracting toolchain"; exit 1; }
+  else
+    echo "ERROR: toolchain archive not found"
+    exit 1
+  fi
+else
+  echo "Toolchain present"
+fi
+
+# Wrap direct binaries so direct execution never fails with missing library
+wrap_binary() {
+  bin_file="$1"
+  real_file="${bin_file}.real"
+  jhome="${2:-}"
+  if [ -f "$bin_file" ] && [ ! -f "$real_file" ]; then
+    mv "$bin_file" "$real_file"
+    chmod 755 "$real_file" 2>/dev/null
+    {
+      echo '#!/system/bin/sh'
+      echo 'if [ -z "${HOME:-}" ]; then export HOME="'"$H"'"; fi'
+      if [ -n "$jhome" ]; then
+        echo 'export JAVA_HOME="'"$jhome"'"'
+      fi
+      echo 'LD_LIBRARY_PATH="'"$TC"'/usr/lib" exec "'"$real_file"'" "$@"'
+    } > "$bin_file"
+    chmod 755 "$bin_file" 2>/dev/null
+  fi
+}
+
+wrap_binary "$TC/usr/bin/git" ""
+wrap_binary "$TC/usr/bin/aapt2" ""
+
+JDK_BIN="$TC/usr/lib/jvm/java-21-openjdk/bin"
+for b in java javac keytool jar; do
+  wrap_binary "$JDK_BIN/$b" "$TC/usr/lib/jvm/java-21-openjdk"
+done
+
+for s in "$TC/usr/bin/"* "$TC/usr/opt/gradle/bin/"*; do
+  if [ -f "$s" ]; then
+    if head -n 1 "$s" 2>/dev/null | grep -q "com.termux"; then
+      sed -i '1s|.*|#!/system/bin/sh|' "$s" 2>/dev/null
+      chmod 755 "$s" 2>/dev/null
+    fi
+  fi
+done
+
+# Ensure workspace symlink ~/OpenCode -> /storage/emulated/0/OpenCode
+mkdir -p /storage/emulated/0/OpenCode 2>/dev/null
+ln -sfn /storage/emulated/0/OpenCode "$H/OpenCode" 2>/dev/null
+
+echo "== 2/5 Command-line tools and SDK =="
+# Copy wrappers to $H/bin and $TC/bin
+for w in java javac keytool git aapt2; do
+  if [ -f "$H/bin/wrap/$w" ]; then
+    cp "$H/bin/wrap/$w" "$H/bin/$w" 2>/dev/null
+    chmod 755 "$H/bin/$w" 2>/dev/null
+    cp "$H/bin/wrap/$w" "$TC/bin/$w" 2>/dev/null
+    chmod 755 "$TC/bin/$w" 2>/dev/null
+  fi
+done
+
+if [ -f "$H/bin/wrap/d8" ]; then
+  cp "$H/bin/wrap/d8" "$H/bin/d8" 2>/dev/null
+  chmod 755 "$H/bin/d8" 2>/dev/null
+  cp "$H/bin/wrap/d8" "$TC/bin/d8" 2>/dev/null
+  chmod 755 "$TC/bin/d8" 2>/dev/null
+fi
+if [ -f "$H/bin/wrap/apksigner" ]; then
+  cp "$H/bin/wrap/apksigner" "$H/bin/apksigner" 2>/dev/null
+  chmod 755 "$H/bin/apksigner" 2>/dev/null
+  cp "$H/bin/wrap/apksigner" "$TC/bin/apksigner" 2>/dev/null
+  chmod 755 "$TC/bin/apksigner" 2>/dev/null
+fi
+
+# Ensure gradle-oc in both $H/bin and $TC/bin
+if [ -f "$H/bin/gradle-oc" ]; then
+  cp "$H/bin/gradle-oc" "$TC/bin/gradle-oc" 2>/dev/null
+  chmod 755 "$TC/bin/gradle-oc" 2>/dev/null
+fi
+
+echo "Platforms and Build-Tools ready"
+
+echo "== 3/5 Environment configuration =="
+mkdir -p "$H/.gradle" "$H/.android" 2>/dev/null
+GP="$H/.gradle/gradle.properties"
+touch "$GP"
+grep -q aapt2FromMavenOverride "$GP" 2>/dev/null ||   echo "android.aapt2FromMavenOverride=$TC/bin/aapt2" >> "$GP"
+grep -q suppressAgpWarnings "$GP" 2>/dev/null ||   echo "android.sync.suppressAgpWarnings=UNSUPPORTED_PROJECT_OPTION_USE" >> "$GP"
+grep -q suppressUnsupportedCompileSdk "$GP" 2>/dev/null ||   echo "android.suppressUnsupportedCompileSdk=35" >> "$GP"
+grep -q org.gradle.jvmargs "$GP" 2>/dev/null ||   echo "org.gradle.jvmargs=-Xmx3g" >> "$GP"
+
+# Configure shell profile so interactive/subshells always have PATH and variables
+MKSHRC="$H/.mkshrc"
+{
+  echo 'export HOME="'"$H"'"'
+  echo 'export ANDROID_HOME="'"$H"'/android-sdk"'
+  echo 'export ANDROID_SDK_ROOT="'"$H"'/android-sdk"'
+  echo 'export JAVA_HOME="'"$TC"'/usr/lib/jvm/java-21-openjdk"'
+  echo 'export ANDROID_USER_HOME="'"$H"'/.android"'
+  echo 'export GRADLE_USER_HOME="'"$H"'/.gradle"'
+  echo 'export PATH="'"$H"'/bin:'"$TC"'/bin:'"$TC"'/usr/bin:'"$H"'/android-sdk/platform-tools:'"$H"'/android-sdk/build-tools/35.0.0:'"$H"'/android-sdk/build-tools/34.0.0:/system/bin:${PATH:-}"'
+  echo 'alias gradle="gradle-oc"'
+} > "$MKSHRC"
+cp "$MKSHRC" "$H/.profile" 2>/dev/null
+cp "$MKSHRC" "$H/.bashrc" 2>/dev/null
+
+for ver in 35.0.0 34.0.0; do
+  BDIR="$SDK/build-tools/$ver"
+  if [ -f "$BDIR/lib/d8.jar" ]; then
+    printf '%s\n' '#!/system/bin/sh'       'if [ -z "${HOME:-}" ]; then export HOME="'"$H"'"; fi'       'LD_LIBRARY_PATH="'"$TC"'/usr/lib" exec "'"$TC"'/bin/java" -Djava.io.tmpdir="'"$H"'/tmp" -Xmx2G -cp "'"$BDIR"'/lib/d8.jar" com.android.tools.r8.D8 "$@"'       > "$BDIR/d8"
+    chmod 755 "$BDIR/d8" 2>/dev/null
+  fi
+  if [ -f "$BDIR/lib/apksigner.jar" ]; then
+    printf '%s\n' '#!/system/bin/sh'       'if [ -z "${HOME:-}" ]; then export HOME="'"$H"'"; fi'       'LD_LIBRARY_PATH="'"$TC"'/usr/lib" exec "'"$TC"'/bin/java" -Djava.io.tmpdir="'"$H"'/tmp" -jar "'"$BDIR"'/lib/apksigner.jar" "$@"'       > "$BDIR/apksigner"
+    chmod 755 "$BDIR/apksigner" 2>/dev/null
+  fi
+  printf '%s\n' '#!/system/bin/sh'     'if [ -z "${HOME:-}" ]; then export HOME="'"$H"'"; fi'     'LD_LIBRARY_PATH="'"$TC"'/usr/lib" exec "'"$TC"'/bin/aapt2" "$@"'     > "$BDIR/aapt2"
+  chmod 755 "$BDIR/aapt2" 2>/dev/null
+done
+
+echo "== 4/5 Toolchain verification =="
+"$H/bin/java" -version 2>&1 | head -1
+"$TC/usr/lib/jvm/java-21-openjdk/bin/java" -version 2>&1 | head -1
+"$H/bin/git" --version 2>&1 | head -1
+"$TC/usr/bin/git" --version 2>&1 | head -1
+"$H/bin/aapt2" version 2>&1 | head -1
+"$TC/usr/bin/aapt2" version 2>&1 | head -1
+which gradle-oc 2>&1 || echo "gradle-oc in bin: $(ls -l "$H/bin/gradle-oc" 2>&1)"
+ls -ld "$H/OpenCode" 2>&1
+ls "$SDK/platforms/android-35/android.jar" >/dev/null 2>&1 && echo "platform-35 OK" || echo "FAIL platform-35"
+ls "$SDK/build-tools/35.0.0/d8" >/dev/null 2>&1 && echo "build-tools-35 OK" || echo "FAIL build-tools-35"
+ls "$SDK/build-tools/34.0.0/d8" >/dev/null 2>&1 && echo "build-tools-34 OK" || echo "FAIL build-tools-34"
+echo "Toolchain and SDK verified: compile with gradle-oc"

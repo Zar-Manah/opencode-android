@@ -1,8 +1,0 @@
-#!/bin/bash
-# open-auth — verifies OpenCode model access for this device.
-set -u
-echo "=== OpenCode · Device Models ==="
-echo "[ok] Operating on free built-in OpenCode models (no API key required)."
-echo ""
-echo "Available models:"
-opencode models 2>/dev/null | grep -E "free|opencode" || echo "opencode/mimo-v2.6-flash-free"

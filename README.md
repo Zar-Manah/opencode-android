@@ -1,17 +1,16 @@
 <p align="center">
-  <img src="opencode-icon.png" width="128" alt="OpenCode icon" />
+  <img src="opencode-icon.png" width="128" height="128" alt="OpenCode Android Logo" />
 </p>
 
-# OpenCode for Android 🤖📱
+# OpenCode Desktop for Android 📱⚡
 
-[![GitHub Release](https://img.shields.io/github/v/release/Zar-Manah/opencode-android?color=7C3AED&style=for-the-badge&logo=android)](https://github.com/Zar-Manah/opencode-android/releases/latest)
-[![Platform](https://img.shields.io/badge/Platform-Android%208.0%2B-3DDC84?style=for-the-badge&logo=android)](https://github.com/Zar-Manah/opencode-android)
-[![Architecture](https://img.shields.io/badge/Arch-arm64--v8a-blue?style=for-the-badge)](https://github.com/Zar-Manah/opencode-android)
-[![No Root Required](https://img.shields.io/badge/Root-NO%20ROOT%20REQUIRED-success?style=for-the-badge)](https://github.com/Zar-Manah/opencode-android)
-[![Crafted in Spain](https://img.shields.io/badge/Crafted%20in-Spain%20%F0%9F%87%AA%F0%9F%87%B8-FFD700?style=for-the-badge)](https://github.com/Zar-Manah/opencode-android)
-[![License](https://img.shields.io/badge/License-GPL%20v3-yellow?style=for-the-badge)](LICENSE)
+[![OpenCode Release](https://img.shields.io/github/v/release/Zar-Manah/opencode-android-apk?style=for-the-badge&color=blue)](https://github.com/Zar-Manah/opencode-android-apk/releases/latest)
+[![Platform](https://img.shields.io/badge/Platform-Android%208.0%2B%20%7C%20arm64--v8a-brightgreen?style=for-the-badge)](https://github.com/Zar-Manah/opencode-android-apk)
+[![No Root Required](https://img.shields.io/badge/Root-NO%20ROOT%20REQUIRED-success?style=for-the-badge)](https://github.com/Zar-Manah/opencode-android-apk)
+[![Crafted with Passion in Spain](https://img.shields.io/badge/Crafted%20with%20Passion%20in-Spain%20%F0%9F%87%AA%F0%9F%87%B8-FFD700?style=for-the-badge)](https://github.com/Zar-Manah/opencode-android-apk)
+[![License](https://img.shields.io/badge/License-GPL%20v3-yellow?style=for-the-badge)](LICENSE.md)
 
-> **Plug and play OpenCode app for Android: full device control and APK creator (NO ROOT REQUIRED), persistent cognitive memory, 24/7 daemon mode, a fully autonomous AI coding agent on your phone. Crafted in Spain 🇪🇸.**
+> **Plug-and-play OpenCode desktop-native app for Android: full device control & autonomous on-device APK creator (NO ROOT REQUIRED), persistent cognitive memory, 24/7 background daemon, and complete offline toolchain (JDK 21, Gradle, Android SDK). Crafted with passion in Spain 🇪🇸.**
 
 ---
 
@@ -20,51 +19,53 @@
 Transform your Android smartphone or tablet into a state-of-the-art AI software engineering workstation in less than 60 seconds:
 
 ```
-[ Download opencode.apk ] ➔ [ Tap Install ] ➔ [ Grant Permissions ] ➔ [ Code with AI ]
+[ Download opencode.apk ] ➔ [ Tap Install ] ➔ [ Grant 4 Permissions ] ➔ [ Code with AI ]
 ```
 
-1. **Download `opencode.apk`** from [GitHub Releases](https://github.com/Zar-Manah/opencode-android/releases/latest).
-2. **Install** the APK on your Android device (Android 8.0+ / arm64-v8a).
-3. **Open the app** and follow the guided setup (Storage & Accessibility Bridge).
-4. **You're ready!** OpenCode launches immediately into the interactive chat TUI. No complex terminal setup, no manual package compiling, and zero configuration headaches. Works out of the box with free OpenCode models as well as custom API keys.
+1. **Download `opencode.apk`** from [GitHub Releases](https://github.com/Zar-Manah/opencode-android-apk/releases/latest).
+2. **Install** the APK on your Android device (Android 8.0+ / `arm64-v8a`).
+3. **Open the app** and complete the guided 4-step setup.
+4. **You're ready!** OpenCode launches immediately into the native desktop-class interface. Works out of the box with free OpenCode models as well as custom API keys.
 
 ---
 
-## 🌟 Why OpenCode for Android is Unique
+## 🌟 Why OpenCode Desktop for Android is Unique
 
-Traditional mobile terminal ports were never built for AI agents: virtual keyboards freeze, voice dictation drops inputs, background tasks get killed by aggressive Android power management, and agents are trapped in isolated sandboxes unable to see or interact with the operating system.
+Traditional mobile terminal ports were never built for full software engineering: slow container emulation, virtual keyboards that freeze, background tasks killed by power management, and sandboxes unable to interact with the device.
 
-**OpenCode for Android solves every single one of these problems:**
+**OpenCode Desktop for Android redesigns the entire stack from the ground up:**
 
-### 1. ⌨️ Smooth Virtual Keyboard & Voice Dictation
-- **Completely Fixed Input Engine**: Native virtual keyboards (Gboard, Samsung Keyboard, SwiftKey) work seamlessly. No key-repeats, no frozen input buffers, and no missed keystrokes.
-- **Full Voice-to-Text Support**: Dictate prompts, code refactors, or terminal commands using your keyboard's microphone button without breaking terminal cursor positions or hanging the process.
+### 1. 🚀 Native Desktop-Class Architecture (Zero PRoot Overhead)
+- **Pure Native Execution**: The official OpenCode engine runs natively on Android user space via a high-performance musl dynamic linker (`ld-musl-aarch64`). No slow emulation containers, no PRoot filesystem overhead, and zero performance penalty.
+- **Hardware-Accelerated UI**: Rich, fluid desktop-grade interface with full keyboard, clipboard, and touch support.
+- **Instant Launch**: Starts in seconds with minimal memory footprint.
 
-### 2. 🧠 Persistent Cognitive Architecture (Autonomous Memory & Subconscious)
-Unlike stateless CLI sessions that forget everything once restarted, OpenCode for Android incorporates a local cognitive architecture:
-- **Episodic Long-Term Memory**: Autonomous memory engine (`/root/.opencode/memory.json`) that records learnings, key context, project goals, and user preferences.
-- **Contextual Recall (BM25)**: Re-injects relevant past context automatically based on conversation turns.
-- **Nightly Dream Consolidation (3:30 AM)**: Automatic background cron jobs consolidate recent events, remove redundancy, update system goals, and keep memory clean.
-- **Morning Digest (8:00 AM)**: Summarizes accomplishments and prepares project goals for the upcoming day.
-
-### 3. 📱 Desktop-Class Agent with Full Phone Control (Zero Root)
-OpenCode is not just confined to a terminal — it has hands and eyes on your mobile operating system up to the theoretical limit of unrooted Android:
-- **Eyes (`pc shot` & `pc dump`)**: Real-time ultra-fast screenshot analysis (<0.4s) and XML UI accessibility hierarchy tree dumping.
+### 2. 📱 Full Phone Control (No Root Required)
+OpenCode is not just an editor — it has hands and eyes on the mobile operating system up to the theoretical limit of unrooted Android:
+- **Eyes (`pc shot` & `pc dump`)**: Real-time ultra-fast screenshot analysis (<0.3s) and XML UI accessibility hierarchy tree dumping.
 - **Hands (`pc tap` & `pc swipe`)**: Can tap UI buttons, scroll through apps, and interact with native Android interfaces.
 - **Typing (`pc text`)**: Injects text into active application text fields.
-- **App Management**: Can launch apps (`pc open <package>`), read notifications, and trigger system intents.
-- **Native Android App Factory**: The agent can scaffold Jetpack Compose / Kotlin / Gradle projects, compile APKs, and invoke on-device installation autonomously!
+- **Navigation (`pc key BACK` / `pc key HOME`)**: Triggers standard Android navigation keys.
+- **App Management**: Can launch apps (`pc open <package>`), query installed packages (`pc list`), read logs, and post notifications (`pc notify`).
 
-### 4. 🔋 24/7 Background Daemon & Quick-Action Banner
-Android aggressively kills background processes. OpenCode includes an optimized notification control center:
-- **`24/7 Server` Action Pill**: Toggles high-performance wake-locks and background server mode, turning your phone into a persistent 24/7 coding server (similar to a background desktop daemon).
-- **`Exit` Action Pill**: Cleanly terminates background processes and releases system resources with a single tap.
+### 3. 🏭 Autonomous On-Device Android App Factory (100% Offline)
+OpenCode can design, scaffold, compile, sign, install, and visually verify native Android applications directly on your phone:
+- **Bundled Toolchain**: OpenJDK 21 (`java`, `javac`, `keytool`), Android SDK (platforms `android-35`, build-tools `35.0.0` and `34.0.0`, native `d8`, `apksigner`, `aapt2`), and `gradle-oc`.
+- **Zero Network Required**: All compiler toolchains and core dependencies are pre-bundled inside the APK. No external PC, no USB cable, and no active Internet connection needed for compilation.
+- **Autonomous Installation**: Installs compiled APKs directly onto the phone via the local bridge (`pc install app/build/outputs/apk/debug/*-debug.apk`).
+- **Visual Verification Loop**: Takes a screenshot of the newly launched app (`pc shot /sdcard/Download/app.png`), analyzes the layout hierarchy (`pc dump`), and iterates on the code autonomously until it is pixel-perfect.
+
+### 4. 🧠 Persistent Cognitive Architecture
+Unlike stateless sessions that forget context when restarted:
+- **Episodic Long-Term Memory**: Autonomous memory engine (`~/.config/opencode/memory/memory.json`) that records learnings, project capabilities, device configuration, and user preferences across sessions.
+- **Self-Improving Agents**: OpenCode updates its memory after verifying builds and features, preserving patterns learned on the device.
+
+### 5. 🔋 24/7 Background Service
+- Runs as a persistent foreground service with partial wake-locks, allowing long-running agentic tasks and builds to complete even with the screen turned off.
 
 ---
 
 ## 🏗️ Architecture Overview
-
-OpenCode for Android combines a robust native Android container harness with a complete Debian Linux distribution:
 
 ```
 ┌────────────────────────────────────────────────────────┐
@@ -73,83 +74,97 @@ OpenCode for Android combines a robust native Android container harness with a c
 │   OpenCode Host App      │   Native Accessibility      │
 │   (a.opencode / UI)      │   Bridge Server (:4399)     │
 ├──────────────────────────┴─────────────────────────────┤
-│         PRoot Debian Linux Container (Trixie)          │
+│             Native Android User Space                  │
 │  ┌──────────────────────────────────────────────────┐  │
-│  │ Node.js 24 + OpenCode CLI + Git + Dev Tools      │  │
-│  │ Local Cognitive Layer (Memory, Crons, Prompts)   │  │
-│  │ Bridge CLI (`pc`, `adb`, `free`, `crontab`)      │  │
+│  │ Official OpenCode Engine (ld-musl-aarch64 :4096) │  │
+│  │ Local Cognitive Layer (memory.json, AGENTS.md)   │  │
+│  │ Device Bridge CLI (`pc`)                         │  │
+│  │ Native Toolchain (JDK 21 + SDK 35/34 + gradle-oc)│  │
+│  │ Workspace Root: ~/OpenCode (/sdcard/OpenCode)    │  │
 │  └──────────────────────────────────────────────────┘  │
 └────────────────────────────────────────────────────────┘
 ```
 
-- **Target SDK**: Optimized for modern Android (ColorOS, OneUI, HyperOS, Stock AOSP) with bypass for restrictive `W^X` memory protections.
-- **PRoot Debian Subsystem**: A complete, native Debian userland containing Node.js 24, Python 3, OpenJDK, Git, ZSH with autosuggestions and syntax highlighting.
-- **Accessibility & IPC Bridge**: High-speed localhost loopback communication between the containerized AI agent and Android OS services.
-
 ---
 
-## 🚀 Quick Start Guide
+## 🚀 Guided Initial Setup
 
-### Step 1: Download & Install
-Grab the latest release from the [Releases tab](https://github.com/Zar-Manah/opencode-android/releases/latest) or run via ADB:
-```bash
-adb install -r opencode.apk
+When launching OpenCode for the first time, a streamlined setup screen guides you through the 4 required permissions:
+
+```
+┌─────────────────────────────────────────────────────────┐
+│                       OpenCode                          │
+│ To grant OpenCode full device control, follow steps:    │
+│                                                         │
+│ [OpenCode]       Downloaded apps → OpenCode             │
+│ [App info]       Allow restricted settings (3 dots ⋮)   │
+│ [Allow files]    Manage all files                       │
+│ [Allow installs] Install unknown apps                   │
+│                                                         │
+│ Bridge: connected  ·  Files: ok  ·  Installs: ok        │
+└─────────────────────────────────────────────────────────┘
 ```
 
-### Step 2: Grant Permissions
-To grant OpenCode full device control (taps, keys, screen capture, and app installation), follow these steps:
-1. Tap '1. Go to Accessibility' and select OpenCode — at first you'll get a message that you can't select it, but it's important you tap it anyway so the three dots from step 2 appear, then return here.
-2. Tap '2. Unlock (3 dots)', tap the 3 dots (⋮) in the top right corner, and select 'Allow restricted settings'. Then go back to step one and now it will let you select OpenCode.
-3. Tap '3. Files Access' to grant permission to manage all files.
-4. Return and tap 'Continue to OpenCode' if it doesn't open automatically.
+1. **`OpenCode` (`Downloaded apps → OpenCode`)**:
+   Tap the button, select **Downloaded apps**, and select **OpenCode**. *(On Android 13+, you will initially see a message that the setting is restricted; tap it anyway so the 3 dots appear in the next step, then return).*
+2. **`App info` (`Restricted settings`)**:
+   Tap the button, tap the **3 dots (⋮)** in the top right corner, and select **'Allow restricted settings'**. Return to step 1 and enable OpenCode.
+3. **`Allow files` (`Manage all files`)**:
+   Tap the button to grant permission to manage all files. This allows OpenCode to read and write your workspace at `/storage/emulated/0/OpenCode`.
+4. **`Allow installs` (`Install unknown apps`)**:
+   Tap the button to allow installing apps created by OpenCode.
 
-### Step 3: Start Coding
-On first launch, wait a couple of minutes and the OpenCode terminal interface will initialize automatically. Simply type your prompt, pick your model, and start building!
+Once all four are granted, the status updates to:
+`Bridge: connected · Files: ok · Installs: ok`
+and OpenCode launches automatically!
 
 ---
 
-## 🛠️ Built-in Tooling & Commands
+## 🛠️ Built-in Tooling & Bridge Commands
 
-Inside the OpenCode shell, you have access to a rich set of mobile automation and development tools:
+OpenCode includes the `pc` device control CLI, accessible directly from the agent's environment:
 
 | Command | Description |
 |---|---|
-| `opencode` / `oc` | Launch the OpenCode AI coding assistant |
-| `pc shot [output.png]` | Capture high-speed screenshot of current screen |
-| `pc dump` | Dump UI hierarchy tree (XML) of the active app |
-| `pc tap <x> <y>` | Tap specific coordinate on screen |
-| `pc swipe <x1> <y1> <x2> <y2> [ms]` | Perform swipe gesture |
-| `pc text "<text>"` | Type text into currently focused input |
-| `pc key <HOME\|BACK\|POWER>` | Send hardware key event |
-| `pc open <package\|url>` | Launch application or open web link |
-| `pc notify "<msg>" "[title]"` | Send Android system notification |
-| `pc list [filter]` | List installed applications on device |
+| `pc ping` | Check device bridge status and health |
+| `pc shot [path.png]` | Capture high-speed screenshot of current screen |
+| `pc dump` | Dump active window accessibility view hierarchy XML |
+| `pc tap <x> <y>` | Send touch tap to screen coordinate |
+| `pc swipe <x1> <y1> <x2> <y2> [ms]` | Send smooth swipe gesture across screen |
+| `pc text <string>` | Type text into the active input field |
+| `pc key <BACK\|HOME>` | Trigger Android system navigation keys |
+| `pc open <package>` | Launch application by package name |
+| `pc install <path.apk>` | Autonomously install APK on device |
+| `pc shell <command>` | Execute shell commands with application permissions |
+| `pc list [filter]` | Query installed packages on the device |
+| `pc notify <message> [title]` | Post system notification banner |
+| `gradle-oc <tasks>` | On-device mksh-safe Gradle runner |
+
+---
+
+## 💻 Autonomous App Development Workflow
+
+1. **Scaffold Project**: The agent creates the project structure in `~/OpenCode/<ProjectName>/` (symlinked to `/storage/emulated/0/OpenCode/<ProjectName>/`).
+2. **Build**: Compiles on-device with `gradle-oc :app:clean assembleDebug`.
+3. **Install**: Deploys autonomously via `pc install app/build/outputs/apk/debug/*-debug.apk`.
+4. **Launch & Verify**: Opens the app with `pc open <package>`, captures screenshots with `pc shot /sdcard/Download/<name>.png`, and inspects UI hierarchy with `pc dump`.
+
+---
+
+## 🔒 Security & Privacy
+
+- **100% Local-First**: Runs directly on your device. Zero telemetry.
+- **No Root Required**: Operates strictly within standard unrooted Android user space.
+- **Transparent Open Source**: All source code and build recipes are publicly verifiable.
 
 ---
 
 ## 🇪🇸 Crafted with Passion in Spain
 
-**OpenCode for Android** is conceived, engineered, and published from Spain 🇪🇸 by **Zar-Manah**. 
-
-Our vision is to break the hardware boundary of modern software engineering: empowering developers, students, researchers, and creators worldwide to carry a complete, self-sustaining AI software engineering powerhouse directly in their pocket.
-
----
-
-## 🤝 Contributing
-
-Contributions, bug reports, and feature requests are very welcome!
-- Check out our [Issues](https://github.com/Zar-Manah/opencode-android/issues) tab.
-- Submit Pull Requests with improvements or documentation enhancements.
+OpenCode for Android is an open-source initiative developed and published with ❤️ from Madrid, Spain by **Zar-Manah**.
 
 ---
 
 ## 📄 License
 
-This project is licensed under the **GNU General Public License v3.0 (GPLv3)** — see the [LICENSE](LICENSE) file for details.
-
----
-
-<p align="center">
-  <b>Built for the future of mobile AI software engineering.</b><br>
-  <sub>OpenCode is an independent open-source project. Not affiliated with Google, Termux, or Android.</sub>
-</p>
+Licensed under the [GNU General Public License v3.0](LICENSE.md).

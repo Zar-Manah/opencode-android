@@ -1,0 +1,7 @@
+#!/system/bin/sh
+# iconos: genera iconos adaptativos con el JDK del telefono (sin python ni pip).
+if [ -z "${HOME:-}" ]; then export HOME="/data/user/0/a.opencode/files/server-home"; fi
+H=$(dirname "$0"); H=$(cd "$H/.." && pwd)
+U="$H/usr"
+export LD_LIBRARY_PATH="$U/lib"
+exec "$U/lib/jvm/java-21-openjdk/bin/java" -Djava.awt.headless=true -cp "$H/bin/iconos.jar" Iconos "$@"

@@ -1,6 +1,0 @@
-#!/bin/bash
-echo "=== OPENCODE BRIDGE STATUS ==="
-echo "ADB: $(adb get-state 2>/dev/null || echo disconnected)"
-echo "Bridge dir: /bridge"
-echo "Home host: /open-home"
-echo "Prefix host: /open-prefix"

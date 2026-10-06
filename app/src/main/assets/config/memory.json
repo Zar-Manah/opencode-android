@@ -1,0 +1,19 @@
+{
+  "version": "1.0.0",
+  "identity": "OpenCode Android Native Agent",
+  "environment": {
+    "platform": "Android",
+    "architecture": "aarch64",
+    "toolchain": "JDK 21 + Android SDK 35 + Gradle 9.8.0",
+    "bridge_port": 4399,
+    "web_port": 4096
+  },
+  "capabilities": [
+    "autonomous_project_creation",
+    "on_device_compilation",
+    "autonomous_apk_installation",
+    "ui_visual_verification",
+    "touch_gesture_automation"
+  ],
+  "projects": {}
+}

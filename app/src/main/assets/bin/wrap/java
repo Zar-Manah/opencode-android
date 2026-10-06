@@ -1,0 +1,8 @@
+#!/system/bin/sh
+# java: standalone wrapper (no global LD_LIBRARY_PATH leak).
+if [ -z "${HOME:-}" ]; then export HOME="/data/user/0/a.opencode/files/server-home"; fi
+U="$HOME/toolchain/usr"
+export JAVA_HOME="$U/lib/jvm/java-21-openjdk"
+BIN="$U/lib/jvm/java-21-openjdk/bin/java.real"
+if [ ! -f "$BIN" ]; then BIN="$U/lib/jvm/java-21-openjdk/bin/java"; fi
+LD_LIBRARY_PATH="$U/lib" exec "$BIN" "$@"

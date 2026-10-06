@@ -5,3 +5,10 @@ build/
 .cxx/
 local.properties
 .DS_Store
+
+# Large offline assets (pre-bundled in official GitHub Release standalone APK)
+app/src/main/assets/gradle-cache/
+app/src/main/assets/sdk/
+app/src/main/assets/server/opencode
+app/src/main/assets/toolchain/*.tar.gz
+app/src/main/assets/toolchain/*.tar
