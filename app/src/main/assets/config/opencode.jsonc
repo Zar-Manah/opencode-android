@@ -17,5 +17,8 @@
       "rm -fr /": "deny",
       "rm -Rf /": "deny"
     }
-  }
+  },
+  "instructions": [
+    "AGENTS.md"
+  ]
 }

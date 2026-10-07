@@ -3,7 +3,7 @@
 set -e
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 export JAVA_HOME=/opt/homebrew/opt/openjdk@17
-export ANDROID_HOME=/Users/carlo/Library/Android/sdk
+export ANDROID_HOME=${ANDROID_HOME:-$HOME/Library/Android/sdk}
 export PATH=$JAVA_HOME/bin:$PATH
 cd "$ROOT"
 ./gradlew :app:assembleRelease

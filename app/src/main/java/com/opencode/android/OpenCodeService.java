@@ -165,7 +165,19 @@ public class OpenCodeService extends Service {
         if (server == null && !serverRunning) {
             new Thread(this::bootServer).start();
         }
-        new Thread(this::ensureFactory).start();
+        new Thread(() -> {
+            try {
+                File ready = new File(new File(getFilesDir(), "server-home"), ".factory-ready");
+                if (ready.exists()) return;
+                for (int i = 0; i < 60; i++) {
+                    if (serverUp()) break;
+                    Thread.sleep(1000);
+                }
+                Thread.sleep(45000);
+                android.os.Process.setThreadPriority(android.os.Process.THREAD_PRIORITY_BACKGROUND);
+                ensureFactory();
+            } catch (Exception ignored) {}
+        }).start();
         return START_STICKY;
     }
 
@@ -235,8 +247,15 @@ public class OpenCodeService extends Service {
             File home = new File(getFilesDir(), "server-home");
             if (!home.exists()) home.mkdirs();
             File work = new File(android.os.Environment.getExternalStorageDirectory(), "OpenCode");
-            if (!work.exists()) work.mkdirs();
-            ensureSymlink(work, new File(home, "OpenCode"));
+            try {
+                if (!work.exists()) work.mkdirs();
+            } catch (Exception ignored) {}
+            if (!work.exists() || !work.canWrite()) {
+                work = new File(home, "OpenCode");
+                if (!work.exists()) work.mkdirs();
+            } else {
+                ensureSymlink(work, new File(home, "OpenCode"));
+            }
 
             File ready = new File(home, ".factory-ready");
             if (ready.exists()) return;
@@ -341,8 +360,15 @@ public class OpenCodeService extends Service {
             File home = new File(getFilesDir(), "server-home");
             if (!home.exists()) home.mkdirs();
             File work = new File(android.os.Environment.getExternalStorageDirectory(), "OpenCode");
-            if (!work.exists()) work.mkdirs();
-            ensureSymlink(work, new File(home, "OpenCode"));
+            try {
+                if (!work.exists()) work.mkdirs();
+            } catch (Exception ignored) {}
+            if (!work.exists() || !work.canWrite()) {
+                work = new File(home, "OpenCode");
+                if (!work.exists()) work.mkdirs();
+            } else {
+                ensureSymlink(work, new File(home, "OpenCode"));
+            }
 
             List<String> cmd = new ArrayList<>();
             cmd.add(new File(dir, "ld-musl-aarch64.so.1").getAbsolutePath());
@@ -362,7 +388,7 @@ public class OpenCodeService extends Service {
                 + " engine=" + engine.exists() + "/" + engine.canExecute()
                 + " len=" + engine.length());
             Map<String, String> env = pb.environment();
-            env.put("HOME", home.getAbsolutePath());
+            env.put("HOME", work.getAbsolutePath());
             env.remove("LD_LIBRARY_PATH");
             env.put("SSL_CERT_FILE", new File(dir, "ca-certificates.crt").getAbsolutePath());
             env.put("SSL_CERT_DIR", "");
@@ -371,6 +397,9 @@ public class OpenCodeService extends Service {
             env.put("JAVA_HOME", new File(home, "toolchain/usr/lib/jvm/java-21-openjdk").getAbsolutePath());
             env.put("ANDROID_USER_HOME", new File(home, ".android").getAbsolutePath());
             env.put("GRADLE_USER_HOME", new File(home, ".gradle").getAbsolutePath());
+            env.put("XDG_CONFIG_HOME", new File(home, ".config").getAbsolutePath());
+            env.put("XDG_DATA_HOME", new File(home, ".local/share").getAbsolutePath());
+            env.put("XDG_CACHE_HOME", new File(home, ".cache").getAbsolutePath());
             env.put("ENV", new File(home, ".mkshrc").getAbsolutePath());
             String path = home.getAbsolutePath() + "/bin:"
                 + home.getAbsolutePath() + "/toolchain/bin:"
@@ -382,14 +411,19 @@ public class OpenCodeService extends Service {
             env.put("PATH", path);
             env.put("SHELL", "/system/bin/sh");
             pb.redirectErrorStream(true);
+            File sLog = new File(getFilesDir(), "server.log");
             server = pb.start();
             serverRunning = true;
             updateNotification();
             final Process p = server;
             new Thread(() -> {
-                try (BufferedReader r = new BufferedReader(new InputStreamReader(p.getInputStream()))) {
+                try (BufferedReader r = new BufferedReader(new InputStreamReader(p.getInputStream()));
+                     FileOutputStream out = new FileOutputStream(sLog, true)) {
                     String line;
-                    while ((line = r.readLine()) != null) Log.i(TAG, line);
+                    while ((line = r.readLine()) != null) {
+                        Log.i(TAG, line);
+                        out.write((line + "\n").getBytes("UTF-8"));
+                    }
                 } catch (Exception ignored) {}
                 serverRunning = false;
                 updateNotification();
@@ -404,51 +438,50 @@ public class OpenCodeService extends Service {
         Log.i(TAG, "install: begin");
         File dir = new File(getFilesDir(), "server");
         if (!dir.exists()) dir.mkdirs();
-        // Libs estables empaquetadas (musl): copia rápida.
+        File bin = new File(dir, "opencode");
+        File loader = new File(dir, "ld-musl-aarch64.so.1");
+
         String[] libs = getAssets().list("server");
         if (libs == null || libs.length == 0) throw new RuntimeException("assets/server empty");
         for (String name : libs) {
-            if (name.equals("engine.version")) continue;
-            copyAsset("server/" + name, new File(dir, name));
+            if (name.equals("engine.version") || name.equals("opencode")) continue;
+            File dest = new File(dir, name);
+            if (!dest.exists()) copyAsset("server/" + name, dest);
         }
-        chmod(new File(dir, "ld-musl-aarch64.so.1"), 0755);
+        chmod(loader, 0755);
         for (String name : libs) {
             if (name.startsWith("ld-musl")) continue;
             if (name.endsWith(".so") || name.endsWith(".so.1")) chmod(new File(dir, name), 0644);
         }
-        Log.i(TAG, "install: libs ok");
-        // Binario: última versión oficial, bajo demanda. Si viene embutido, se usa sin red.
-        File bin = new File(dir, "opencode");
+
         File marker = new File(dir, ".version");
-        String installed = readMarker(marker);
-        if (!bin.canExecute()) {
+        if (!bin.exists() || bin.length() < 50000000) {
             try {
                 copyAsset("server/opencode", bin);
                 chmod(bin, 0755);
                 writeMarker(marker, assetText("server/engine.version"));
-                installed = readMarker(marker);
                 Log.i(TAG, "install: engine seeded from assets");
             } catch (Exception e) {
                 Log.e(TAG, "engine seed missing", e);
             }
+        } else {
+            chmod(bin, 0755);
         }
-        String latest = "";
-        try { latest = EngineFetcher.latestTag(); } catch (Exception e) {
-            Log.e(TAG, "latest check failed: " + e.getMessage());
-        }
-        Log.i(TAG, "install: installed=" + installed + " latest=" + latest);
-        if (!bin.canExecute() || (!latest.isEmpty() && !latest.equals(installed) && !installed.startsWith(latest))) {
-            progress("…");
+
+        if (!bin.exists() || bin.length() < 1000) {
             try {
+                String latest = EngineFetcher.latestTag();
                 EngineFetcher.fetch(bin, (done, total) -> progress(
                     (done / 1048576) + "MB" + (total > 0 ? " / " + (total / 1048576) + "MB" : "")));
                 if (!latest.isEmpty()) writeMarker(marker, latest);
-                Log.i(TAG, "install: engine downloaded");
-            } finally {
-                progress(null);
+                Log.i(TAG, "install: engine fallback downloaded");
+            } catch (Exception e) {
+                Log.e(TAG, "fetch fallback failed", e);
             }
         }
-        if (!bin.canExecute()) throw new RuntimeException("engine not executable");
+        chmod(bin, 0755);
+        if (!bin.exists() || bin.length() < 1000) throw new RuntimeException("engine not available");
+
         installPc();
         return dir;
     }
@@ -536,9 +569,10 @@ public class OpenCodeService extends Service {
             File cfg = new File(home, ".config/opencode");
             if (!cfg.exists()) cfg.mkdirs();
             File jsonc = new File(cfg, "opencode.jsonc");
-            if (!jsonc.exists()) copyAsset("config/opencode.jsonc", jsonc);
+            copyAsset("config/opencode.jsonc", jsonc);
             File agents = new File(cfg, "AGENTS.md");
-            if (!agents.exists()) copyAsset("config/AGENTS.md", agents);
+            copyAsset("config/AGENTS.md", agents);
+            copyAsset("config/AGENTS.md", new File(home, "AGENTS.md"));
             File memDir = new File(cfg, "memory");
             if (!memDir.exists()) memDir.mkdirs();
             File memFile = new File(memDir, "memory.json");
@@ -547,7 +581,7 @@ public class OpenCodeService extends Service {
             File work = new File(android.os.Environment.getExternalStorageDirectory(), "OpenCode");
             if (work.exists()) {
                 File workAgents = new File(work, "AGENTS.md");
-                if (!workAgents.exists()) copyAsset("config/AGENTS.md", workAgents);
+                copyAsset("config/AGENTS.md", workAgents);
             }
             ensureSymlink(work, new File(home, "OpenCode"));
 
@@ -571,10 +605,14 @@ public class OpenCodeService extends Service {
 
     /** Copia un árbol de assets (directorios y ficheros). */
     private void copyAssetTree(String assetPath, File dest) throws Exception {
+        if (assetPath.endsWith("platforms/android-35/data/res")) return;
         String[] list = getAssets().list(assetPath);
         if (list != null && list.length > 0) {
             dest.mkdirs();
-            for (String name : list) copyAssetTree(assetPath + "/" + name, new File(dest, name));
+            for (String name : list) {
+                if ("res".equals(name) && assetPath.endsWith("platforms/android-35/data")) continue;
+                copyAssetTree(assetPath + "/" + name, new File(dest, name));
+            }
             return;
         }
         try {
@@ -594,18 +632,22 @@ public class OpenCodeService extends Service {
     }
 
     private static void chmod(File f, int mode) {
+        if (f == null || !f.exists()) return;
+        try {
+            f.setReadable(true, false);
+            if ((mode & 0111) != 0) {
+                f.setExecutable(true, false);
+            }
+        } catch (Exception ignored) {}
         try {
             Os.chmod(f.getAbsolutePath(), mode);
         } catch (Exception e) {
             Log.e(TAG, "chmod failed " + f + ": " + e.getMessage());
             try {
                 Process p = Runtime.getRuntime().exec(
-                    new String[]{"/system/bin/chmod", mode == 0755 ? "755" : "644", f.getAbsolutePath()});
+                    new String[]{"/system/bin/chmod", (mode & 0111) != 0 ? "755" : "644", f.getAbsolutePath()});
                 p.waitFor();
-                Log.i(TAG, "chmod shell exit=" + p.exitValue() + " " + f);
-            } catch (Exception e2) {
-                Log.e(TAG, "chmod shell failed " + f + ": " + e2.getMessage());
-            }
+            } catch (Exception ignored) {}
         }
     }
 
