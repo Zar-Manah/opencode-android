@@ -51,7 +51,7 @@ OpenCode breaks out of the sandbox to provide true agentic capability on Android
 - **Typing & Navigation (`pc text` & `pc key`)**: Types into active text fields and sends system navigation keys (Back, Home).
 - **Application Control**: Launches apps (`pc open <package>`), lists installed packages (`pc list`), reads logs, and delivers notifications (`pc notify`).
 
-### 4. 🏭 Autonomous On-Device Android App Factory 🔥 (100% Offline)
+### 4. 🏭 Autonomous On-Device Android App Factory 🔥
 Turn your phone into a self-contained mobile software factory capable of designing, scaffolding, compiling, signing, installing, and visually verifying native Android applications:
 - **Bundled Toolchain**: Pre-packaged OpenJDK 21, Android SDK (platforms `android-35`, build-tools `35.0.0` and `34.0.0`, native `d8`, `apksigner`, `aapt2`), and `gradle-oc`.
 - **Zero PC & Zero Internet Required for Builds**: Compiles and signs APKs entirely on-device without an external computer or network connectivity.
